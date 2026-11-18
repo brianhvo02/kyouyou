@@ -1,7 +1,12 @@
 // Read-only client for X-Plane 12's built-in web API (REST + WebSocket).
 // Opt-in: nothing here touches the network until createSimReader(...).connect() is called.
 
-export type SimState = 'off' | 'connecting' | 'connected' | 'unavailable';
+/**
+ * 'no-flight': X-Plane answers but has no flight loaded (its dataref count is 0); retried like 'unavailable'.
+ * There is deliberately no staleness check: a paused simulator sends almost no updates, so silence is not
+ * a sign of a dead connection. A dead socket shows itself through its close or error event instead.
+ */
+export type SimState = 'off' | 'connecting' | 'connected' | 'unavailable' | 'no-flight';
 
 export interface SimBase {
   httpBase: string;
@@ -23,8 +28,10 @@ export interface SimReaderOptions<K extends string> {
   base: SimBase;
   /** The caller's key -> X-Plane dataref name. */
   datarefs: Readonly<Record<K, string>>;
-  /** A failed lookup of one of these means 'unavailable'. */
-  required: readonly K[];
+  /** A failed lookup of one of these means 'unavailable'. Default: none. */
+  required?: readonly K[];
+  /** Each HTTP request, and the opening of the WebSocket, is abandoned after this long. Default 8000. */
+  timeoutMs?: number;
   fetch?: typeof fetch;
   WebSocket?: new (url: string) => WebSocketLike;
   now?: () => number;
@@ -36,9 +43,19 @@ export interface SimReader<K extends string> {
   disconnect(): void;
   onValues(cb: (values: Partial<Record<K, DatarefValue>>, at: number) => void): () => void;
   onState(cb: (state: SimState) => void): () => void;
+  /**
+   * Reads datarefs once over HTTP, by X-Plane name. For values that are read rather than watched,
+   * such as the aircraft's identity. Names X-Plane does not know are left out of the result.
+   * Rejects with an Error when the reader is not in the `connected` state, on a failed request and on a timeout.
+   */
+  read(names: readonly string[]): Promise<Record<string, DatarefValue>>;
 }
 
 const BACKOFF_MS = [1000, 2000, 4000, 8000, 15000];
+const DEFAULT_TIMEOUT_MS = 8000;
+const SUBSCRIBE_REQ_ID = 1;
+
+class TimeoutError extends Error {}
 
 /** 'https://host:1/x/' -> {httpBase: 'https://host:1/x', wsBase: 'wss://host:1/x'}; http -> ws. */
 export function simBaseFromUrl(url: string): SimBase {
@@ -53,20 +70,65 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
   const valueCbs = new Set<(values: Partial<Record<K, DatarefValue>>, at: number) => void>();
   const stateCbs = new Set<(state: SimState) => void>();
   const keys = Object.keys(opts.datarefs) as K[];
+  const required = opts.required ?? [];
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   let state: SimState = 'off';
   let run = 0; // bumped on every connect/disconnect so stale async work is ignored
   let socket: WebSocketLike | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
+  let openTimer: ReturnType<typeof setTimeout> | null = null;
   let attempt = 0;
+  let readIds = new Map<string, number>(); // ids looked up by read(), for the current connection only
+  const inFlight = new Set<AbortController>();
+
+  // A throwing callback must not break the reader or the callbacks after it.
+  const callSafely = <A extends unknown[]>(cb: (...args: A) => void, ...args: A): void => {
+    try {
+      cb(...args);
+    } catch (e) {
+      console.error('kyouyou/xplane/read: a callback threw', e);
+    }
+  };
 
   const setState = (s: SimState): void => {
     if (state === s) return;
     state = s;
-    for (const cb of stateCbs) cb(s);
+    for (const cb of [...stateCbs]) callSafely(cb, s);
+  };
+
+  /** GET and parse JSON. Gives up after `timeoutMs` even when `fetch` ignores its signal; disconnect() aborts it. */
+  const getJson = (url: string): Promise<unknown> => {
+    const doFetch = opts.fetch ?? globalThis.fetch.bind(globalThis);
+    const ctl = new AbortController();
+    inFlight.add(ctl);
+    return new Promise<unknown>((resolve, reject) => {
+      const t = setTimeout(() => {
+        reject(new TimeoutError(`request timed out: ${url}`));
+        ctl.abort();
+      }, timeoutMs);
+      ctl.signal.addEventListener('abort', () => reject(new Error(`request aborted: ${url}`)));
+      doFetch(url, {signal: ctl.signal})
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
+          return res.json() as Promise<unknown>;
+        })
+        .then(resolve, reject)
+        .finally(() => {
+          clearTimeout(t);
+          inFlight.delete(ctl);
+        });
+    });
+  };
+
+  /** Id of the named dataref, or undefined when X-Plane says it has none. */
+  const lookupId = async (name: string): Promise<number | undefined> => {
+    const body = await getJson(`${opts.base.httpBase}/api/v3/datarefs?filter[name]=${encodeURIComponent(name)}`);
+    const first = (body as {data?: {id?: unknown; name?: unknown}[]} | null)?.data?.[0];
+    return typeof first?.id === 'number' ? first.id : undefined;
   };
 
   // Runs at most once per socket: an error is usually followed by a close, and a stale socket must not reschedule.
-  const fail = (id: number, ws?: WebSocketLike): void => {
+  const fail = (id: number, ws?: WebSocketLike, next: 'unavailable' | 'no-flight' = 'unavailable'): void => {
     if (id !== run) return;
     if (ws) {
       if (socket !== ws) return;
@@ -78,7 +140,9 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
       }
     }
     socket = null;
-    setState('unavailable');
+    if (openTimer) clearTimeout(openTimer);
+    openTimer = null;
+    setState(next);
     const delay = BACKOFF_MS[Math.min(attempt, BACKOFF_MS.length - 1)];
     attempt++;
     if (timer) clearTimeout(timer);
@@ -90,40 +154,55 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
 
   const start = (): void => {
     const id = run;
+    readIds = new Map();
     setState('connecting');
     void open(id).catch(() => fail(id));
   };
 
   const open = async (id: number): Promise<void> => {
-    const doFetch = opts.fetch ?? globalThis.fetch.bind(globalThis);
     const WS = opts.WebSocket ?? (globalThis.WebSocket as unknown as new (url: string) => WebSocketLike);
-    const caps = (await (await doFetch(`${opts.base.httpBase}/api/capabilities`)).json()) as {api?: {versions?: unknown}};
+    const caps = (await getJson(`${opts.base.httpBase}/api/capabilities`)) as {api?: {versions?: unknown}};
     if (id !== run) return;
     const versions = Array.isArray(caps.api?.versions) ? (caps.api.versions as unknown[]).map((v) => String(v).replace(/^v/i, '')) : [];
     if (!versions.includes('3')) throw new Error('X-Plane web API v3 is not available');
+
+    // X-Plane answers with no datarefs at all while no flight is loaded.
+    const count = ((await getJson(`${opts.base.httpBase}/api/v3/datarefs/count`)) as {data?: unknown} | null)?.data;
+    if (id !== run) return;
+    if (typeof count !== 'number' || !Number.isFinite(count)) throw new Error('unexpected dataref count answer');
+    if (count === 0) {
+      fail(id, undefined, 'no-flight');
+      return;
+    }
 
     // Session ids, looked up afresh on every attempt. Two keys may name the same dataref.
     const keysById = new Map<string, K[]>();
     for (const key of keys) {
       let found: unknown;
       try {
-        const res = await doFetch(`${opts.base.httpBase}/api/v3/datarefs?filter[name]=${encodeURIComponent(opts.datarefs[key])}`);
-        found = ((await res.json()) as {data?: {id?: unknown}[]}).data?.[0]?.id;
+        found = await lookupId(opts.datarefs[key]);
       } catch (e) {
-        if (opts.required.includes(key)) throw e;
+        // A timeout means X-Plane is not answering, so it fails the attempt whether or not the key is required.
+        if (e instanceof TimeoutError || required.includes(key)) throw e;
       }
       if (id !== run) return;
       if (typeof found === 'number') keysById.set(String(found), [...(keysById.get(String(found)) ?? []), key]);
-      else if (opts.required.includes(key)) throw new Error(`dataref not found: ${opts.datarefs[key]}`);
+      else if (required.includes(key)) throw new Error(`dataref not found: ${opts.datarefs[key]}`);
     }
 
     const ws = new WS(`${opts.base.wsBase}/api/v3`);
     socket = ws;
+    openTimer = setTimeout(() => {
+      openTimer = null;
+      fail(id, ws);
+    }, timeoutMs);
     const merged: Partial<Record<K, DatarefValue>> = {}; // X-Plane sends only changed values, so keep the latest of each
     ws.onopen = () => {
       if (id !== run) return;
+      if (openTimer) clearTimeout(openTimer);
+      openTimer = null;
       attempt = 0;
-      ws.send(JSON.stringify({req_id: 1, type: 'dataref_subscribe_values', params: {datarefs: [...keysById.keys()].map((n) => ({id: Number(n)}))}}));
+      ws.send(JSON.stringify({req_id: SUBSCRIBE_REQ_ID, type: 'dataref_subscribe_values', params: {datarefs: [...keysById.keys()].map((n) => ({id: Number(n)}))}}));
     };
     ws.onmessage = (e) => {
       if (id !== run) return;
@@ -134,7 +213,11 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
         return;
       }
       if (typeof msg !== 'object' || msg === null) return;
-      const {type, data} = msg as {type?: unknown; data?: unknown};
+      const {type, data, req_id, success} = msg as {type?: unknown; data?: unknown; req_id?: unknown; success?: unknown};
+      if (type === 'result') {
+        if (req_id === SUBSCRIBE_REQ_ID && success === false) fail(id, ws);
+        return;
+      }
       if (type !== 'dataref_update_values' || typeof data !== 'object' || data === null) return;
       let changed = false;
       for (const [n, value] of Object.entries(data)) {
@@ -145,13 +228,24 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
         }
       }
       if (!changed) return;
-      if (opts.required.every((key) => key in merged)) setState('connected');
+      if (required.every((key) => key in merged)) setState('connected');
       const snapshot = {...merged};
       const at = (opts.now ?? Date.now)();
-      for (const cb of valueCbs) cb(snapshot, at);
+      for (const cb of [...valueCbs]) callSafely(cb, snapshot, at);
     };
     ws.onerror = () => fail(id, ws);
     ws.onclose = () => fail(id, ws);
+  };
+
+  const readOne = async (name: string, ids: Map<string, number>): Promise<DatarefValue | undefined> => {
+    let id = ids.get(name);
+    if (id === undefined) {
+      id = await lookupId(name);
+      if (id === undefined) return undefined;
+      ids.set(name, id);
+    }
+    const body = (await getJson(`${opts.base.httpBase}/api/v3/datarefs/${id}/value`)) as {data?: unknown} | null;
+    return isValue(body?.data) ? body.data : undefined;
   };
 
   return {
@@ -168,6 +262,10 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
       run++;
       if (timer) clearTimeout(timer);
       timer = null;
+      if (openTimer) clearTimeout(openTimer);
+      openTimer = null;
+      for (const ctl of [...inFlight]) ctl.abort();
+      inFlight.clear();
       const s = socket;
       socket = null;
       if (s) {
@@ -183,6 +281,17 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
     onState(cb) {
       stateCbs.add(cb);
       return () => stateCbs.delete(cb);
+    },
+    async read(names) {
+      if (state !== 'connected') throw new Error(`X-Plane is not connected (state: ${state})`);
+      const ids = readIds;
+      const values = await Promise.all(names.map((name) => readOne(name, ids)));
+      const out: Record<string, DatarefValue> = {};
+      names.forEach((name, i) => {
+        const v = values[i];
+        if (v !== undefined) out[name] = v;
+      });
+      return out;
     },
   };
 }

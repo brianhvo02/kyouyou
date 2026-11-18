@@ -38,15 +38,28 @@ let table: Record<string, number>;
 let versions: string[];
 let failFetches: number;
 let urls: string[];
+let hang: (url: string) => boolean; // a request this matches never answers (and ignores its signal)
+let signals: {url: string; signal: AbortSignal | undefined; init: RequestInit | undefined}[];
+let flightCount: number;
+let failCount: boolean;
+let values: Record<number, unknown>; // value of a dataref, by id, for the single-value read
 
-const fakeFetch = (async (url: string) => {
+const fakeFetch = (async (url: string, init?: RequestInit) => {
   urls.push(String(url));
+  signals.push({url: String(url), signal: init?.signal ?? undefined, init});
+  if (hang(String(url))) return new Promise(() => {});
   if (failFetches > 0) {
     failFetches--;
     throw new Error('network down');
   }
   const u = String(url);
   if (u.endsWith('/api/capabilities')) return {ok: true, json: async () => ({api: {versions}})};
+  if (u.endsWith('/api/v3/datarefs/count')) {
+    if (failCount) return {ok: false, status: 500, json: async () => ({})};
+    return {ok: true, json: async () => ({data: flightCount})};
+  }
+  const valueId = /\/api\/v3\/datarefs\/(\d+)\/value$/.exec(u)?.[1];
+  if (valueId !== undefined) return {ok: true, json: async () => ({data: values[Number(valueId)]})};
   const name = decodeURIComponent(u.split('filter[name]=')[1] ?? '');
   return {ok: true, json: async () => ({data: table[name] === undefined ? [] : [{id: table[name], name}]})};
 }) as unknown as typeof fetch;
@@ -54,13 +67,24 @@ const fakeFetch = (async (url: string) => {
 const base = {httpBase: 'http://sim', wsBase: 'ws://sim'};
 const datarefs = {com: 'sim/a', lat: 'sim/b'};
 
-function make(required: ('com' | 'lat')[] = ['com', 'lat']): {reader: SimReader<'com' | 'lat'>; states: SimState[]; values: Partial<Record<'com' | 'lat', unknown>>[]} {
-  const reader = createSimReader({base, datarefs, required, fetch: fakeFetch, WebSocket: FakeSocket, now: () => 7});
+type Key = 'com' | 'lat';
+
+function make(required: Key[] | null = ['com', 'lat'], timeoutMs?: number): {reader: SimReader<Key>; states: SimState[]; values: Partial<Record<Key, unknown>>[]} {
+  const reader = createSimReader({base, datarefs, required: required ?? undefined, timeoutMs, fetch: fakeFetch, WebSocket: FakeSocket, now: () => 7});
   const states: SimState[] = [];
-  const values: Partial<Record<'com' | 'lat', unknown>>[] = [];
+  const values: Partial<Record<Key, unknown>>[] = [];
   reader.onState((s) => states.push(s));
   reader.onValues((v) => values.push(v));
   return {reader, states, values};
+}
+
+/** Connects the reader and brings it to `connected`. */
+async function connectUp(reader: SimReader<Key>): Promise<void> {
+  reader.connect();
+  await settle();
+  FakeSocket.last.open();
+  FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 1, '22': 2}});
+  expect(reader.state).toBe('connected');
 }
 
 const settle = async (): Promise<void> => {
@@ -74,8 +98,14 @@ beforeEach(() => {
   versions = ['v1', 'v2', 'v3'];
   failFetches = 0;
   urls = [];
+  hang = () => false;
+  signals = [];
+  flightCount = 100;
+  failCount = false;
+  values = {};
 });
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
@@ -298,5 +328,320 @@ describe('createSimReader', () => {
     FakeSocket.last.open();
     FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 1}});
     expect(seen).toEqual([]);
+  });
+});
+
+describe('timeouts', () => {
+  it('a capabilities request that never answers gives unavailable after the timeout, then retries', async () => {
+    hang = (u) => u.endsWith('/api/capabilities');
+    const {reader} = make();
+    reader.connect();
+    await vi.advanceTimersByTimeAsync(7999);
+    expect(reader.state).toBe('connecting');
+    await vi.advanceTimersByTimeAsync(1);
+    expect(reader.state).toBe('unavailable');
+    expect(signals[0].signal?.aborted).toBe(true);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(reader.state).toBe('connecting');
+    expect(urls.filter((u) => u.endsWith('/api/capabilities'))).toHaveLength(2);
+  });
+
+  it('honours a custom timeoutMs', async () => {
+    hang = (u) => u.endsWith('/api/capabilities');
+    const {reader} = make(['com', 'lat'], 500);
+    reader.connect();
+    await vi.advanceTimersByTimeAsync(499);
+    expect(reader.state).toBe('connecting');
+    await vi.advanceTimersByTimeAsync(1);
+    expect(reader.state).toBe('unavailable');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(reader.state).toBe('connecting');
+    expect(urls.filter((u) => u.endsWith('/api/capabilities'))).toHaveLength(2);
+  });
+
+  it('a lookup that never answers gives unavailable after the timeout', async () => {
+    hang = (u) => u.includes('filter[name]=sim%2Fb');
+    const {reader} = make();
+    reader.connect();
+    await vi.advanceTimersByTimeAsync(7999);
+    expect(reader.state).toBe('connecting');
+    await vi.advanceTimersByTimeAsync(1);
+    expect(reader.state).toBe('unavailable');
+    expect(FakeSocket.all).toHaveLength(0);
+  });
+
+  it('a lookup of an optional dataref that never answers also fails the attempt', async () => {
+    hang = (u) => u.includes('filter[name]=sim%2Fb');
+    const {reader} = make(['com']);
+    reader.connect();
+    await vi.advanceTimersByTimeAsync(8000);
+    expect(reader.state).toBe('unavailable');
+    expect(FakeSocket.all).toHaveLength(0);
+  });
+
+  it('a socket that never opens is closed after the timeout and retried', async () => {
+    const {reader} = make();
+    reader.connect();
+    await settle();
+    expect(FakeSocket.all).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(7999);
+    expect(FakeSocket.all[0].closed).toBe(false);
+    expect(reader.state).toBe('connecting');
+    await vi.advanceTimersByTimeAsync(1);
+    expect(FakeSocket.all[0].closed).toBe(true);
+    expect(reader.state).toBe('unavailable');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(FakeSocket.all).toHaveLength(2);
+  });
+
+  it('a socket that opens in time is not closed by the timeout', async () => {
+    const {reader} = make();
+    await connectUp(reader);
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(FakeSocket.all[0].closed).toBe(false);
+    expect(reader.state).toBe('connected');
+  });
+});
+
+describe('no flight loaded', () => {
+  it('a dataref count of zero gives no-flight and keeps retrying, then connects when a flight is loaded', async () => {
+    flightCount = 0;
+    const {reader, states} = make();
+    reader.connect();
+    await settle();
+    expect(reader.state).toBe('no-flight');
+    expect(urls).toContain('http://sim/api/v3/datarefs/count');
+    expect(FakeSocket.all).toHaveLength(0);
+    for (const delay of [1000, 2000, 4000, 8000, 15000, 15000]) {
+      const before = urls.length;
+      await vi.advanceTimersByTimeAsync(delay - 1);
+      expect(urls.length).toBe(before);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(urls.length).toBeGreaterThan(before);
+      expect(reader.state).toBe('no-flight');
+    }
+    flightCount = 5;
+    await vi.advanceTimersByTimeAsync(15000);
+    FakeSocket.last.open();
+    FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 1, '22': 2}});
+    expect(reader.state).toBe('connected');
+    expect(states).not.toContain('unavailable');
+  });
+
+  it('a failed count request gives unavailable, not no-flight', async () => {
+    failCount = true;
+    const {reader, states} = make();
+    reader.connect();
+    await settle();
+    expect(reader.state).toBe('unavailable');
+    expect(states).not.toContain('no-flight');
+  });
+
+  it('a count request that never answers gives unavailable after the timeout', async () => {
+    hang = (u) => u.endsWith('/datarefs/count');
+    const {reader} = make();
+    reader.connect();
+    await vi.advanceTimersByTimeAsync(8000);
+    expect(reader.state).toBe('unavailable');
+  });
+});
+
+describe('subscription result', () => {
+  it('a refused subscription gives unavailable and retries', async () => {
+    const {reader} = make();
+    reader.connect();
+    await settle();
+    FakeSocket.last.open();
+    FakeSocket.last.message({type: 'result', req_id: 1, success: false});
+    expect(reader.state).toBe('unavailable');
+    expect(FakeSocket.all[0].closed).toBe(true);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(FakeSocket.all).toHaveLength(2);
+  });
+
+  it('the subscribe message carries the req_id the result is matched against', async () => {
+    const {reader} = make();
+    reader.connect();
+    await settle();
+    FakeSocket.last.open();
+    const sent = JSON.parse(FakeSocket.last.sent[0]) as {req_id: number};
+    FakeSocket.last.message({type: 'result', req_id: sent.req_id + 1, success: false});
+    expect(reader.state).toBe('connecting');
+    FakeSocket.last.message({type: 'result', req_id: sent.req_id, success: false});
+    expect(reader.state).toBe('unavailable');
+  });
+
+  it('a successful subscription result is ignored', async () => {
+    const {reader, values} = make();
+    reader.connect();
+    await settle();
+    FakeSocket.last.open();
+    FakeSocket.last.message({type: 'result', req_id: 1, success: true});
+    expect(reader.state).toBe('connecting');
+    expect(FakeSocket.all[0].closed).toBe(false);
+    FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 1, '22': 2}});
+    expect(reader.state).toBe('connected');
+    expect(values).toHaveLength(1);
+  });
+});
+
+describe('read', () => {
+  it('read returns the values of the named datarefs and leaves out unknown names', async () => {
+    table['sim/c'] = 33;
+    values[33] = 'QUJD';
+    values[11] = [1, 2, 3];
+    const {reader} = make();
+    await connectUp(reader);
+    const out = await reader.read(['sim/c', 'sim/a', 'sim/nope']);
+    expect(out).toEqual({'sim/c': 'QUJD', 'sim/a': [1, 2, 3]});
+    expect(urls).toContain('http://sim/api/v3/datarefs/33/value');
+    expect(reader.state).toBe('connected');
+  });
+
+  it('read only makes GET requests and sends nothing over the socket', async () => {
+    values[11] = 4;
+    const {reader} = make();
+    await connectUp(reader);
+    await reader.read(['sim/a']);
+    for (const s of signals) expect(Object.keys(s.init ?? {})).toEqual(['signal']);
+    expect(FakeSocket.last.sent).toHaveLength(1);
+  });
+
+  it('read remembers ids for the life of the connection', async () => {
+    values[11] = 4;
+    const {reader} = make();
+    await connectUp(reader);
+    await reader.read(['sim/a']);
+    await reader.read(['sim/a']);
+    expect(urls.filter((u) => u.includes('filter[name]=sim%2Fa'))).toHaveLength(2); // one for subscribing, one for read
+  });
+
+  it('read rejects when not connected', async () => {
+    const {reader} = make();
+    await expect(reader.read(['sim/a'])).rejects.toThrow(/not connected/);
+    reader.connect();
+    await settle();
+    await expect(reader.read(['sim/a'])).rejects.toThrow(/not connected/);
+    expect(urls.filter((u) => u.endsWith('/value'))).toEqual([]);
+  });
+
+  it('read rejects on a failed request and the state is unchanged', async () => {
+    const {reader} = make();
+    await connectUp(reader);
+    table['sim/c'] = 33;
+    failFetches = 1;
+    await expect(reader.read(['sim/c'])).rejects.toThrow('network down');
+    expect(reader.state).toBe('connected');
+  });
+
+  it('read rejects on a timeout and the subscription carries on', async () => {
+    const {reader, values: got} = make();
+    await connectUp(reader);
+    hang = (u) => u.includes('filter[name]=sim%2Fz');
+    const pending = reader.read(['sim/z']);
+    const assertion = expect(pending).rejects.toThrow(/timed out/);
+    await vi.advanceTimersByTimeAsync(8000);
+    await assertion;
+    expect(reader.state).toBe('connected');
+    const count = got.length;
+    FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 9}});
+    expect(got).toHaveLength(count + 1);
+  });
+
+  it('read looks ids up again after a reconnect', async () => {
+    values[11] = 1;
+    values[91] = 2;
+    const {reader} = make();
+    await connectUp(reader);
+    expect(await reader.read(['sim/a'])).toEqual({'sim/a': 1});
+    FakeSocket.last.drop();
+    table['sim/a'] = 91;
+    await vi.advanceTimersByTimeAsync(1000);
+    FakeSocket.last.open();
+    FakeSocket.last.message({type: 'dataref_update_values', data: {'91': 5, '22': 5}});
+    expect(reader.state).toBe('connected');
+    expect(await reader.read(['sim/a'])).toEqual({'sim/a': 2});
+    expect(urls).toContain('http://sim/api/v3/datarefs/91/value');
+  });
+
+  it('disconnect rejects a pending read and aborts requests in flight', async () => {
+    const {reader} = make();
+    await connectUp(reader);
+    hang = (u) => u.includes('filter[name]=sim%2Fz');
+    const pending = reader.read(['sim/z']);
+    const assertion = expect(pending).rejects.toThrow(/aborted/);
+    await settle();
+    const sig = signals[signals.length - 1];
+    expect(sig.url).toContain('sim%2Fz');
+    expect(sig.signal?.aborted).toBe(false);
+    reader.disconnect();
+    await assertion;
+    expect(sig.signal?.aborted).toBe(true);
+    expect(reader.state).toBe('off');
+  });
+
+  it('disconnect during connection aborts the request in flight and nothing retries', async () => {
+    hang = (u) => u.endsWith('/api/capabilities');
+    const {reader} = make();
+    reader.connect();
+    await settle();
+    reader.disconnect();
+    expect(signals[0].signal?.aborted).toBe(true);
+    const before = urls.length;
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(urls.length).toBe(before);
+    expect(reader.state).toBe('off');
+  });
+});
+
+describe('callbacks', () => {
+  it('a throwing onValues callback does not stop other callbacks or the connection', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const {reader, values: got} = make();
+    reader.onValues(() => {
+      throw new Error('boom');
+    });
+    const later: unknown[] = [];
+    reader.onValues((v) => later.push(v));
+    reader.connect();
+    await settle();
+    FakeSocket.last.open();
+    FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 1, '22': 2}});
+    FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 3}});
+    expect(got).toHaveLength(2);
+    expect(later).toHaveLength(2);
+    expect(reader.state).toBe('connected');
+    expect(FakeSocket.all[0].closed).toBe(false);
+    expect(err).toHaveBeenCalledTimes(2);
+  });
+
+  it('a throwing onState callback does not stop other callbacks', async () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const {reader} = make();
+    reader.onState(() => {
+      throw new Error('boom');
+    });
+    const later: SimState[] = [];
+    reader.onState((s) => later.push(s));
+    reader.connect();
+    await settle();
+    FakeSocket.last.open();
+    FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 1, '22': 2}});
+    expect(later).toEqual(['connecting', 'connected']);
+    expect(reader.state).toBe('connected');
+    expect(err).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('required', () => {
+  it('required is optional', async () => {
+    const {reader, states} = make(null);
+    reader.connect();
+    await settle();
+    FakeSocket.last.open();
+    expect(reader.state).toBe('connecting');
+    FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 1}});
+    expect(reader.state).toBe('connected');
+    expect(states).toEqual(['connecting', 'connected']);
   });
 });

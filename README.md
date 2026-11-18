@@ -21,7 +21,7 @@ so it works from a plain Node script, under vitest and in a Vite build alike.
 | `kyouyou/geo/polygon` | Whether a position is inside a latitude/longitude ring, across the antimeridian too |
 | `kyouyou/geo/magnetic` | True to magnetic and back, given the variation |
 | `kyouyou/fms` | X-Plane's v1100 `.fms` flight plan: `parseFms` and `writeFms`, held together by a round-trip test |
-| `kyouyou/xplane/read` | X-Plane 12 web API, reading only: subscribes to the datarefs you name and reconnects by itself |
+| `kyouyou/xplane/read` | X-Plane 12 web API, reading only: subscribes to the datarefs you name, reconnects by itself, reports `off`, `connecting`, `connected`, `unavailable` or `no-flight`, times out requests, and `read` fetches values once |
 
 No app data lives here: no Jeppesen, Navigraph or X-Plane files, and nothing converted from one.
 
