@@ -122,21 +122,43 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
     const ctl = new AbortController();
     inFlight.add(ctl);
     return new Promise<unknown>((resolve, reject) => {
+      // Every way out goes through here, so nothing outlives the request.
+      const cleanup = (): void => {
+        clearTimeout(t);
+        inFlight.delete(ctl);
+      };
       const t = setTimeout(() => {
+        cleanup();
         reject(new TimeoutError(`request timed out: ${url}`));
         ctl.abort();
       }, timeoutMs);
-      ctl.signal.addEventListener('abort', () => reject(new Error(`request aborted: ${url}`)));
-      doFetch(url, {signal: ctl.signal})
+      ctl.signal.addEventListener('abort', () => {
+        cleanup();
+        reject(new Error(`request aborted: ${url}`));
+      });
+      let pending: Promise<Response>;
+      try {
+        pending = doFetch(url, {signal: ctl.signal});
+      } catch (e) {
+        cleanup();
+        reject(e);
+        return;
+      }
+      pending
         .then(async (res) => {
           if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
           return res.json() as Promise<unknown>;
         })
-        .then(resolve, reject)
-        .finally(() => {
-          clearTimeout(t);
-          inFlight.delete(ctl);
-        });
+        .then(
+          (v) => {
+            cleanup();
+            resolve(v);
+          },
+          (e: unknown) => {
+            cleanup();
+            reject(e);
+          },
+        );
     });
   };
 
@@ -221,7 +243,6 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
       if (id !== run) return;
       if (openTimer) clearTimeout(openTimer);
       openTimer = null;
-      attempt = 0;
       ws.send(JSON.stringify({req_id: SUBSCRIBE_REQ_ID, type: 'dataref_subscribe_values', params: {datarefs: [...keysById.keys()].map((n) => ({id: Number(n)}))}}));
     };
     ws.onmessage = (e) => {
@@ -248,7 +269,10 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
         }
       }
       if (!changed) return;
-      if (required.every((key) => key in merged)) setState('connected');
+      if (required.every((key) => key in merged)) {
+        attempt = 0; // the backoff resets only once a connection has proved itself, not when the socket opens
+        setState('connected');
+      }
       const snapshot = {...merged};
       const at = (opts.now ?? Date.now)();
       for (const cb of [...valueCbs]) callSafely(cb, snapshot, at);
@@ -258,13 +282,20 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
   };
 
   const readOne = async (name: string, ids: Map<string, number>): Promise<DatarefValue | undefined> => {
+    // Ids are session ids: once a new attempt (or a disconnect) has replaced the map, stop without another request.
+    const current = (): void => {
+      if (ids !== readIds) throw new Error('the reader reconnected or disconnected during read');
+    };
+    current();
     let id = ids.get(name);
     if (id === undefined) {
       id = await lookupId(name);
+      current();
       if (id === undefined) return undefined;
       ids.set(name, id);
     }
     const body = (await getJson(`${opts.base.httpBase}/api/v3/datarefs/${id}/value`)) as {data?: unknown} | null;
+    current();
     return isValue(body?.data) ? body.data : undefined;
   };
 
@@ -284,6 +315,7 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
       timer = null;
       if (openTimer) clearTimeout(openTimer);
       openTimer = null;
+      readIds = new Map(); // a read still going must not continue
       for (const ctl of [...inFlight]) ctl.abort();
       inFlight.clear();
       const s = socket;

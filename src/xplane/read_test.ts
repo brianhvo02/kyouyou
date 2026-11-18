@@ -42,12 +42,18 @@ let hang: (url: string) => boolean; // a request this matches never answers (and
 let signals: {url: string; signal: AbortSignal | undefined; init: RequestInit | undefined}[];
 let flightCount: number;
 let failCount: boolean;
+let held: {match: (url: string) => boolean; promise: Promise<void>} | null; // the next matching request waits for this
 let values: Record<number, unknown>; // value of a dataref, by id, for the single-value read
 
 const fakeFetch = (async (url: string, init?: RequestInit) => {
   urls.push(String(url));
   signals.push({url: String(url), signal: init?.signal ?? undefined, init});
   if (hang(String(url))) return new Promise(() => {});
+  if (held?.match(String(url))) {
+    const wait = held.promise;
+    held = null;
+    await wait;
+  }
   if (failFetches > 0) {
     failFetches--;
     throw new Error('network down');
@@ -99,6 +105,7 @@ beforeEach(() => {
   failFetches = 0;
   urls = [];
   hang = () => false;
+  held = null;
   signals = [];
   flightCount = 100;
   failCount = false;
@@ -243,6 +250,7 @@ describe('createSimReader', () => {
     versions = ['v3'];
     await vi.advanceTimersByTimeAsync(15000);
     FakeSocket.last.open();
+    FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 1, '22': 2}}); // connected: the backoff resets here
     FakeSocket.last.drop();
     expect(reader.state).toBe('unavailable');
     const before = urls.length;
@@ -678,5 +686,114 @@ describe('decodeText', () => {
   it('decodeText of an all-NUL buffer is the empty string', () => {
     expect(decodeText(b64(padded('', 16)))).toBe('');
     expect(decodeText('')).toBe('');
+  });
+});
+
+describe('backoff reset', () => {
+  async function expectBackoff(reader: SimReader<Key>, spoil: () => void): Promise<void> {
+    reader.connect();
+    await settle();
+    for (const delay of [1000, 2000, 4000]) {
+      FakeSocket.last.open();
+      spoil();
+      expect(reader.state).toBe('unavailable');
+      const sockets = FakeSocket.all.length;
+      await vi.advanceTimersByTimeAsync(delay - 1);
+      expect(FakeSocket.all).toHaveLength(sockets);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(FakeSocket.all).toHaveLength(sockets + 1);
+    }
+  }
+
+  it('a subscription that keeps being refused backs off', async () => {
+    const {reader} = make();
+    await expectBackoff(reader, () => FakeSocket.last.message({type: 'result', req_id: 1, success: false}));
+  });
+
+  it('a socket that opens and drops without an update backs off', async () => {
+    const {reader} = make();
+    await expectBackoff(reader, () => FakeSocket.last.drop());
+  });
+});
+
+describe('read across attempts', () => {
+  it('a read does not continue with old ids after a reconnect', async () => {
+    values[11] = 4;
+    const {reader} = make();
+    await connectUp(reader);
+    let release = (): void => {};
+    held = {match: (u) => u.includes('filter[name]=sim%2Fa'), promise: new Promise<void>((r) => (release = r))};
+    const pending = reader.read(['sim/a']);
+    const assertion = expect(pending).rejects.toThrow(/reconnected or disconnected/);
+    await settle();
+    FakeSocket.last.drop();
+    await vi.advanceTimersByTimeAsync(1000);
+    FakeSocket.last.open();
+    FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 1, '22': 2}});
+    expect(reader.state).toBe('connected');
+    release();
+    await assertion;
+    expect(urls.filter((u) => u.endsWith('/value'))).toEqual([]);
+  });
+
+  it('a read makes no further request after disconnect', async () => {
+    values[11] = 4;
+    const {reader} = make();
+    await connectUp(reader);
+    let release = (): void => {};
+    held = {match: (u) => u.includes('filter[name]=sim%2Fa'), promise: new Promise<void>((r) => (release = r))};
+    const pending = reader.read(['sim/a']);
+    const assertion = expect(pending).rejects.toThrow();
+    await settle();
+    release();
+    reader.disconnect();
+    await assertion;
+    await settle();
+    expect(urls.filter((u) => u.endsWith('/value'))).toEqual([]);
+  });
+});
+
+describe('request cleanup', () => {
+  it('a request that never settles is forgotten after its timeout', async () => {
+    hang = (u) => u.endsWith('/api/capabilities');
+    const {reader} = make();
+    reader.connect();
+    await settle();
+    expect(vi.getTimerCount()).toBe(1); // the request timeout
+    await vi.advanceTimersByTimeAsync(8000);
+    expect(reader.state).toBe('unavailable');
+    expect(vi.getTimerCount()).toBe(1); // only the retry
+    reader.disconnect();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('a fetch that throws synchronously is a failed request', async () => {
+    const reader = createSimReader({base, datarefs, fetch: (() => {
+      throw new Error('sync');
+    }) as unknown as typeof fetch, WebSocket: FakeSocket});
+    reader.connect();
+    await settle();
+    expect(reader.state).toBe('unavailable');
+    expect(vi.getTimerCount()).toBe(1); // only the retry
+  });
+
+  it('a timer from an earlier attempt does not disturb a later one', async () => {
+    let first = true;
+    hang = (u) => {
+      if (!first || !u.endsWith('/api/capabilities')) return false;
+      first = false;
+      return true;
+    };
+    const {reader} = make();
+    reader.connect();
+    await settle();
+    reader.disconnect();
+    await connectUp(reader);
+    const sockets = FakeSocket.all.length;
+    const requests = urls.length;
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(reader.state).toBe('connected');
+    expect(FakeSocket.all).toHaveLength(sockets);
+    expect(urls).toHaveLength(requests);
   });
 });
