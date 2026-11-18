@@ -1,6 +1,6 @@
 {
   "name": "kyoyu",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Code shared by the Kōkūzu, Kōro and Kansei flight-simulation apps",
   "private": true,
   "type": "module",
@@ -27,6 +27,26 @@
     "./atmosphere": {
       "types": "./dist/atmosphere/atmosphere.d.ts",
       "default": "./dist/atmosphere/atmosphere.js"
+    },
+    "./geo": {
+      "types": "./dist/geo/geo.d.ts",
+      "default": "./dist/geo/geo.js"
+    },
+    "./geo/track": {
+      "types": "./dist/geo/track.d.ts",
+      "default": "./dist/geo/track.js"
+    },
+    "./geo/polygon": {
+      "types": "./dist/geo/polygon.d.ts",
+      "default": "./dist/geo/polygon.js"
+    },
+    "./geo/magnetic": {
+      "types": "./dist/geo/magnetic.d.ts",
+      "default": "./dist/geo/magnetic.js"
+    },
+    "./fms": {
+      "types": "./dist/fms/fms.d.ts",
+      "default": "./dist/fms/fms.js"
     }
   },
   "files": [

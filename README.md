@@ -16,6 +16,11 @@ so it works from a plain Node script, under vitest and in a Vite build alike.
 | `kyoyu/gfs/noaa-index` | Reads a GFS `.idx` file to find a field's byte range |
 | `kyoyu/gfs/fake-gfs` | A stand-in GFS server for an app's own tests (needs vitest) |
 | `kyoyu/atmosphere` | ISA atmosphere: pressure and temperature at altitude, flight level to GFS pressure level, Mach and CAS to TAS |
+| `kyoyu/geo` | Great-circle distance, initial bearing, nearest of a list, a point part-way along |
+| `kyoyu/geo/track` | A point at a bearing and distance; distance across and along a course |
+| `kyoyu/geo/polygon` | Whether a position is inside a latitude/longitude ring, across the antimeridian too |
+| `kyoyu/geo/magnetic` | True to magnetic and back, given the variation |
+| `kyoyu/fms` | X-Plane's v1100 `.fms` flight plan: `parseFms` and `writeFms`, held together by a round-trip test |
 
 No app data lives here: no Jeppesen, Navigraph or X-Plane files, and nothing converted from one.
 
