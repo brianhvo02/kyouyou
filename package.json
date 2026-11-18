@@ -1,0 +1,54 @@
+{
+  "name": "kyoyu",
+  "version": "0.1.0",
+  "description": "Code shared by the Kōkūzu, Kōro and Kansei flight-simulation apps",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "exports": {
+    "./gfs/fields": {
+      "types": "./dist/gfs/fields.d.ts",
+      "default": "./dist/gfs/fields.js"
+    },
+    "./gfs/grib2": {
+      "types": "./dist/gfs/grib2.d.ts",
+      "default": "./dist/gfs/grib2.js"
+    },
+    "./gfs/noaa-index": {
+      "types": "./dist/gfs/noaa-index.d.ts",
+      "default": "./dist/gfs/noaa-index.js"
+    },
+    "./gfs/fake-gfs": {
+      "types": "./dist/gfs/fake-gfs.d.ts",
+      "default": "./dist/gfs/fake-gfs.js"
+    },
+    "./atmosphere": {
+      "types": "./dist/atmosphere/atmosphere.d.ts",
+      "default": "./dist/atmosphere/atmosphere.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "vitest": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "vitest": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "~6.0.2",
+    "vitest": "5.0.3"
+  }
+}
