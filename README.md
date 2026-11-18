@@ -1,4 +1,4 @@
-# kyoyu (共有)
+# kyouyou (共有)
 
 Code shared by the flight-simulation apps Kōkūzu (charts), Kōro (planning) and Kansei (ATC).
 The name is a working one.
@@ -11,16 +11,16 @@ so it works from a plain Node script, under vitest and in a Vite build alike.
 
 | Import | What it is |
 |---|---|
-| `kyoyu/gfs/fields` | Winds aloft from NOAA GFS: picks the run, fetches byte ranges, decodes and caches fields |
-| `kyoyu/gfs/grib2` | The GRIB2 decoder those fields are read with |
-| `kyoyu/gfs/noaa-index` | Reads a GFS `.idx` file to find a field's byte range |
-| `kyoyu/gfs/fake-gfs` | A stand-in GFS server for an app's own tests (needs vitest) |
-| `kyoyu/atmosphere` | ISA atmosphere: pressure and temperature at altitude, flight level to GFS pressure level, Mach and CAS to TAS |
-| `kyoyu/geo` | Great-circle distance, initial bearing, nearest of a list, a point part-way along |
-| `kyoyu/geo/track` | A point at a bearing and distance; distance across and along a course |
-| `kyoyu/geo/polygon` | Whether a position is inside a latitude/longitude ring, across the antimeridian too |
-| `kyoyu/geo/magnetic` | True to magnetic and back, given the variation |
-| `kyoyu/fms` | X-Plane's v1100 `.fms` flight plan: `parseFms` and `writeFms`, held together by a round-trip test |
+| `kyouyou/gfs/fields` | Winds aloft from NOAA GFS: picks the run, fetches byte ranges, decodes and caches fields |
+| `kyouyou/gfs/grib2` | The GRIB2 decoder those fields are read with |
+| `kyouyou/gfs/noaa-index` | Reads a GFS `.idx` file to find a field's byte range |
+| `kyouyou/gfs/fake-gfs` | A stand-in GFS server for an app's own tests (needs vitest) |
+| `kyouyou/atmosphere` | ISA atmosphere: pressure and temperature at altitude, flight level to GFS pressure level, Mach and CAS to TAS |
+| `kyouyou/geo` | Great-circle distance, initial bearing, nearest of a list, a point part-way along |
+| `kyouyou/geo/track` | A point at a bearing and distance; distance across and along a course |
+| `kyouyou/geo/polygon` | Whether a position is inside a latitude/longitude ring, across the antimeridian too |
+| `kyouyou/geo/magnetic` | True to magnetic and back, given the variation |
+| `kyouyou/fms` | X-Plane's v1100 `.fms` flight plan: `parseFms` and `writeFms`, held together by a round-trip test |
 
 No app data lives here: no Jeppesen, Navigraph or X-Plane files, and nothing converted from one.
 
