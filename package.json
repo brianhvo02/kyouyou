@@ -47,6 +47,10 @@
     "./fms": {
       "types": "./dist/fms/fms.d.ts",
       "default": "./dist/fms/fms.js"
+    },
+    "./xplane/read": {
+      "types": "./dist/xplane/read.d.ts",
+      "default": "./dist/xplane/read.js"
     }
   },
   "files": [
