@@ -40,10 +40,17 @@ export interface SimReader<K extends string> {
     /**
      * Reads datarefs once over HTTP, by X-Plane name. For values that are read rather than watched,
      * such as the aircraft's identity. Names X-Plane does not know are left out of the result.
+     * Values are X-Plane's raw data: text datarefs arrive as base64, which `decodeText` turns into a string.
      * Rejects with an Error when the reader is not in the `connected` state, on a failed request and on a timeout.
      */
     read(names: readonly string[]): Promise<Record<string, DatarefValue>>;
 }
 /** 'https://host:1/x/' -> {httpBase: 'https://host:1/x', wsBase: 'wss://host:1/x'}; http -> ws. */
 export declare function simBaseFromUrl(url: string): SimBase;
+/**
+ * The text of a data dataref such as sim/aircraft/view/acf_ICAO. X-Plane's web API sends those as base64 of a
+ * fixed-size byte buffer padded with NUL bytes. Returns the text up to the first NUL, decoded as UTF-8, or null
+ * when the value is not a string or is not valid base64.
+ */
+export declare function decodeText(value: DatarefValue | undefined): string | null;
 export declare function createSimReader<K extends string>(opts: SimReaderOptions<K>): SimReader<K>;

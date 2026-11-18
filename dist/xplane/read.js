@@ -10,6 +10,27 @@ export function simBaseFromUrl(url) {
     const httpBase = url.replace(/\/+$/, '');
     return { httpBase, wsBase: httpBase.replace(/^http/i, 'ws') };
 }
+/**
+ * The text of a data dataref such as sim/aircraft/view/acf_ICAO. X-Plane's web API sends those as base64 of a
+ * fixed-size byte buffer padded with NUL bytes. Returns the text up to the first NUL, decoded as UTF-8, or null
+ * when the value is not a string or is not valid base64.
+ */
+export function decodeText(value) {
+    if (typeof value !== 'string')
+        return null;
+    let binary;
+    try {
+        binary = atob(value);
+    }
+    catch {
+        return null;
+    }
+    const nul = binary.indexOf('\0');
+    if (nul >= 0)
+        binary = binary.slice(0, nul);
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+}
 const isValue = (v) => (typeof v === 'number' && Number.isFinite(v)) || typeof v === 'string' || (Array.isArray(v) && v.every((n) => typeof n === 'number'));
 export function createSimReader(opts) {
     const valueCbs = new Set();

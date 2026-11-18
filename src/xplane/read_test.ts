@@ -1,5 +1,5 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import {createSimReader, simBaseFromUrl, type SimReader, type SimState} from './read.ts';
+import {createSimReader, decodeText, simBaseFromUrl, type SimReader, type SimState} from './read.ts';
 
 class FakeSocket {
   static all: FakeSocket[] = [];
@@ -643,5 +643,40 @@ describe('required', () => {
     FakeSocket.last.message({type: 'dataref_update_values', data: {'11': 1}});
     expect(reader.state).toBe('connected');
     expect(states).toEqual(['connecting', 'connected']);
+  });
+});
+
+const b64 = (bytes: number[]): string => btoa(String.fromCharCode(...bytes));
+const padded = (text: string, size: number): number[] => {
+  const bytes = [...new TextEncoder().encode(text)];
+  while (bytes.length < size) bytes.push(0);
+  return bytes;
+};
+
+describe('decodeText', () => {
+  it('decodeText reads text up to the first NUL', () => {
+    expect(decodeText(b64(padded('F8X', 40)))).toBe('F8X');
+    expect(decodeText(b64([...padded('AB', 4), 67, 68]))).toBe('AB');
+  });
+
+  it('decodeText handles text with no padding', () => {
+    expect(decodeText(b64(padded('C172', 4)))).toBe('C172');
+    expect(decodeText('RkE4WAAAAA==')).toBe('FA8X');
+  });
+
+  it('decodeText decodes UTF-8', () => {
+    expect(decodeText(b64(padded('Cessna Skyhawk \u00e9\u30bb', 40)))).toBe('Cessna Skyhawk \u00e9\u30bb');
+  });
+
+  it('decodeText returns null for a number, an array, undefined and invalid base64', () => {
+    expect(decodeText(5)).toBeNull();
+    expect(decodeText([1, 2])).toBeNull();
+    expect(decodeText(undefined)).toBeNull();
+    expect(decodeText('not base64 !!')).toBeNull();
+  });
+
+  it('decodeText of an all-NUL buffer is the empty string', () => {
+    expect(decodeText(b64(padded('', 16)))).toBe('');
+    expect(decodeText('')).toBe('');
   });
 });

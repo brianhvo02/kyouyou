@@ -46,6 +46,7 @@ export interface SimReader<K extends string> {
   /**
    * Reads datarefs once over HTTP, by X-Plane name. For values that are read rather than watched,
    * such as the aircraft's identity. Names X-Plane does not know are left out of the result.
+   * Values are X-Plane's raw data: text datarefs arrive as base64, which `decodeText` turns into a string.
    * Rejects with an Error when the reader is not in the `connected` state, on a failed request and on a timeout.
    */
   read(names: readonly string[]): Promise<Record<string, DatarefValue>>;
@@ -61,6 +62,25 @@ class TimeoutError extends Error {}
 export function simBaseFromUrl(url: string): SimBase {
   const httpBase = url.replace(/\/+$/, '');
   return {httpBase, wsBase: httpBase.replace(/^http/i, 'ws')};
+}
+
+/**
+ * The text of a data dataref such as sim/aircraft/view/acf_ICAO. X-Plane's web API sends those as base64 of a
+ * fixed-size byte buffer padded with NUL bytes. Returns the text up to the first NUL, decoded as UTF-8, or null
+ * when the value is not a string or is not valid base64.
+ */
+export function decodeText(value: DatarefValue | undefined): string | null {
+  if (typeof value !== 'string') return null;
+  let binary: string;
+  try {
+    binary = atob(value);
+  } catch {
+    return null;
+  }
+  const nul = binary.indexOf('\0');
+  if (nul >= 0) binary = binary.slice(0, nul);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
 const isValue = (v: unknown): v is DatarefValue =>
