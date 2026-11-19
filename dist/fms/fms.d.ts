@@ -33,7 +33,7 @@ export interface FmsPlan {
     points: FmsPoint[];
     /** The airports among the points, each once, in order. */
     airports: string[];
-    /** The highest altitude on any point, when one is above zero: the plan's initial cruise altitude. */
+    /** The highest altitude on any point, when one is above zero: the cruise altitude, or with per-point altitudes the highest. */
     cruiseAltitudeFt?: number;
 }
 /** A `.fms` file's text as a plan, or why it is not one. Never throws. */
@@ -50,6 +50,8 @@ export interface FmsWritePoint {
 export interface FmsWriteLeg extends FmsWritePoint {
     /** An airway name, DCT (or DRCT) for direct, or the name of the SID or STAR the leg belongs to. */
     via: string;
+    /** The planned altitude at this point, written on its line; when absent, the plan's cruise altitude is. */
+    altitudeFt?: number;
 }
 export interface FmsWritePlan {
     cycle: string;
@@ -68,7 +70,7 @@ export interface FmsWritePlan {
      * (the STAR's own runway wins if both exist and differ). Mirrors `FmsPlan.arrivalRunway` on the read side.
      */
     arrivalRunway?: string;
-    /** Written on every en-route point; the airports get 0. There are no step climbs in the format. */
+    /** Written on every en-route point without its own `altitudeFt`; the airports get 0. */
     cruiseAltitudeFt: number;
     /** Every leg between the airports, the procedures' legs included. */
     legs: readonly FmsWriteLeg[];

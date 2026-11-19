@@ -146,7 +146,7 @@ export function writeFms(plan, mode) {
         if (expandedBySim(leg.via))
             continue;
         const via = leg.via === 'DCT' || leg.via === 'DRCT' || isProcedure(leg.via) ? 'DRCT' : leg.via;
-        lines.push(pointLine(leg, via, plan.cruiseAltitudeFt));
+        lines.push(pointLine(leg, via, leg.altitudeFt ?? plan.cruiseAltitudeFt));
     }
     lines.push(pointLine(plan.dest, 'ADES', 0));
     return [...header, `NUMENR ${lines.length}`, ...lines].map((l) => `${l}\n`).join('');

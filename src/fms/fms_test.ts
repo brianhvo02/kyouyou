@@ -155,6 +155,23 @@ describe('writeFms', () => {
       ].join('\n'),
     );
   });
+  it('writes a leg altitude when the leg has one, and the cruise altitude otherwise', () => {
+    const withAlts: FmsWritePlan = {
+      ...plan, sid: undefined, star: undefined,
+      legs: [
+        {ident: 'HEVAN', kind: 'fix', lat: 36.123456, lon: -85.123456, via: 'DCT', altitudeFt: 12000},
+        {ident: 'VVV', kind: 'vor', lat: 39, lon: -86.5, via: 'J42'},
+        {ident: 'NNN', kind: 'ndb', lat: 40, lon: -87, via: 'DCT', altitudeFt: 37000},
+      ],
+    };
+    const text = writeFms(withAlts, 'waypoints');
+    expect(text).toContain('11 HEVAN DRCT 12000.000000 36.123456 -85.123456\n');
+    expect(text).toContain('3 VVV J42 35000.000000 39.000000 -86.500000\n');
+    expect(text).toContain('2 NNN DRCT 37000.000000 40.000000 -87.000000\n');
+    const back = parseFms(text);
+    expect('error' in back ? back : back.cruiseAltitudeFt).toBe(37000);
+  });
+
   it('writes a procedure without a runway as direct waypoints, with no header for it', () => {
     const text = writeFms({...plan, sid: {name: 'SIDA1'}}, 'named');
     expect(text).not.toContain('SID SIDA1');
