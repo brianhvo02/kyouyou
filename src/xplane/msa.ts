@@ -1,7 +1,9 @@
 // Reader for X-Plane's earth_msa.dat (spec XP MSA1150): published minimum sector altitudes. Row: point
 // type (11 fix, 2 NDB, 3 VHF navaid, 1 airport reference point, 10 runway threshold), ident, region,
 // airport (the same point can have different MSAs per airport), bearing reference M or T, then up to
-// seven sectors of bearing (deg), altitude (hundreds of ft) and radius (NM), ended by `000 000 0`. Each
+// seven sectors of bearing (deg), altitude (hundreds of ft) and radius (NM), ended by `000 000 0`.
+// A sector's altitude applies from the previous sector's bearing, clockwise, to its own bearing, measured
+// outward from the fix (Kōkūzu checked this against terrain; the alternatives fit far fewer MSAs). Each
 // sector's bearing is as ARINC 424 publishes it (field 5.146), except that X-Plane writes 360° as 0 (kept as written). Never throws: malformed rows are skipped;
 // an unsupported version gives none. Sectors with a 0 altitude or 0 radius are left out, and a row left
 // with no sectors is skipped.
