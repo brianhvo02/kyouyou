@@ -1,6 +1,6 @@
 {
   "name": "kyouyou",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Code shared by the Kōkūzu, Kōro and Kansei flight-simulation apps",
   "license": "UNLICENSED",
   "private": true,
@@ -56,6 +56,10 @@
     "./xplane/cifp": {
       "types": "./dist/xplane/cifp.d.ts",
       "default": "./dist/xplane/cifp.js"
+    },
+    "./faa/cifp": {
+      "types": "./dist/faa/cifp.d.ts",
+      "default": "./dist/faa/cifp.js"
     }
   },
   "files": [
