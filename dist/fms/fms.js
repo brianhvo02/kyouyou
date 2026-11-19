@@ -125,12 +125,18 @@ export function writeFms(plan, mode) {
             header.push(`SIDTRANS ${plan.sid.transition}`);
     }
     header.push(`ADES ${plan.dest.ident}`);
+    let desRunway;
     if (plan.star && starRunway !== undefined) {
+        desRunway = starRunway;
         header.push(`DESRWY ${withRw(starRunway)}`, `STAR ${plan.star.name}`);
         if (plan.star.transition !== undefined)
             header.push(`STARTRANS ${plan.star.transition}`);
     }
-    if (named && plan.approach) {
+    else if (named && plan.approach && plan.arrivalRunway !== undefined) {
+        desRunway = plan.arrivalRunway;
+        header.push(`DESRWY ${withRw(plan.arrivalRunway)}`);
+    }
+    if (named && plan.approach && desRunway !== undefined) {
         header.push(`APP ${plan.approach.name}`);
         if (plan.approach.transition !== undefined)
             header.push(`APPTRANS ${plan.approach.transition}`);

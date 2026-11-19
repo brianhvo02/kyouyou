@@ -176,7 +176,30 @@ describe('writeFms', () => {
     const text = writeFms({...plan, approach: {name: 'I27R', transition: 'STARB'}}, 'named');
     expect(text).toContain(['ADES KDDD', 'DESRWY RW27R', 'STAR STARB2', 'APP I27R', 'APPTRANS STARB', 'NUMENR 5', ''].join('\n'));
     expect(writeFms({...plan, approach: {name: 'I27R'}}, 'named')).toContain('STAR STARB2\nAPP I27R\nNUMENR 5\n');
-    expect(writeFms({...plan, star: undefined, approach: {name: 'I27R'}}, 'named')).toContain('ADES KDDD\nAPP I27R\nNUMENR 6\n');
+  });
+  it('writes DESRWY for the approach when there is no STAR block', () => {
+    const noStar = {...plan, star: undefined, approach: {name: 'I24R', transition: 'CRCUS'}, arrivalRunway: '24R'};
+    const text = writeFms(noStar, 'named');
+    expect(text).toContain(['ADES KDDD', 'DESRWY RW24R', 'APP I24R', 'APPTRANS CRCUS', 'NUMENR 6', ''].join('\n'));
+    const back = ok(parseFms(text));
+    expect(back.arrivalRunway).toBe('24R');
+    expect(back.approach).toEqual({name: 'I24R', transition: 'CRCUS'});
+    const noRwyStar = {...noStar, star: {name: 'STARB2'}};
+    expect(writeFms(noRwyStar, 'named')).toContain('ADES KDDD\nDESRWY RW24R\nAPP I24R\n');
+  });
+  it('writes DESRWY once when the STAR block already has it', () => {
+    const text = writeFms({...plan, star: {name: 'STARB2', runway: '25L'}, approach: {name: 'I25L'}, arrivalRunway: '25L'}, 'named');
+    expect(text.match(/^DESRWY /gm)).toHaveLength(1);
+    expect(text).toContain('ADES KDDD\nDESRWY RW25L\nSTAR STARB2\nAPP I25L\n');
+    expect(writeFms({...plan, approach: {name: 'I25L'}, arrivalRunway: '25L'}, 'named')).toContain('DESRWY RW27R\nSTAR');
+  });
+  it('leaves APP out when the approach has no runway anywhere', () => {
+    const text = writeFms({...plan, star: undefined, approach: {name: 'I27R', transition: 'STARB'}}, 'named');
+    expect(text).not.toMatch(/^(APP|APPTRANS|DESRWY)/m);
+  });
+  it('writes neither DESRWY nor APP in waypoints mode', () => {
+    const text = writeFms({...plan, star: undefined, approach: {name: 'I24R'}, arrivalRunway: '24R'}, 'waypoints');
+    expect(text).not.toMatch(/^(APP|DESRWY)/m);
   });
   it('leaves the approach out in waypoints mode', () => {
     expect(writeFms({...plan, approach: {name: 'I27R', transition: 'STARB'}}, 'waypoints')).not.toMatch(/^APP/m);

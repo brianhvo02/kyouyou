@@ -57,8 +57,17 @@ export interface FmsWritePlan {
     dest: FmsWritePoint;
     sid?: FmsProcedure;
     star?: FmsProcedure;
-    /** Named mode only: written as APP (and APPTRANS) after the STAR lines, where X-Plane's own FMS puts them. */
+    /**
+     * Named mode only: written as APP (and APPTRANS) after the STAR lines, where X-Plane's own FMS puts them.
+     * Left out when no destination runway is known (the STAR's or `arrivalRunway`), since X-Plane ignores a
+     * procedure without a runway.
+     */
     approach?: FmsApproach;
+    /**
+     * The destination runway, written as DESRWY in named mode when the STAR block does not already write it
+     * (the STAR's own runway wins if both exist and differ). Mirrors `FmsPlan.arrivalRunway` on the read side.
+     */
+    arrivalRunway?: string;
     /** Written on every en-route point; the airports get 0. There are no step climbs in the format. */
     cruiseAltitudeFt: number;
     /** Every leg between the airports, the procedures' legs included. */
