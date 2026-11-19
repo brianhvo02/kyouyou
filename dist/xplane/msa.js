@@ -1,0 +1,37 @@
+// Reader for X-Plane's earth_msa.dat (spec XP MSA1150): published minimum sector altitudes. Row: point
+// type (11 fix, 2 NDB, 3 VHF navaid, 1 airport reference point, 10 runway threshold), ident, region,
+// airport (the same point can have different MSAs per airport), bearing reference M or T, then up to
+// seven sectors of bearing (deg), altitude (hundreds of ft) and radius (NM), ended by `000 000 0`. Each
+// sector's bearing is as ARINC 424 publishes it (field 5.146). Never throws: malformed rows are skipped;
+// an unsupported version gives none.
+import { datRows } from "./datfile.js";
+const INT = /^\d+$/;
+export function parseMsa(text) {
+    const { version, rows } = datRows(text);
+    if (version !== '1150')
+        return [];
+    const out = [];
+    for (const c of rows) {
+        if (c.length < 8 || !INT.test(c[0]))
+            continue;
+        const ref = c[4];
+        if (ref !== 'M' && ref !== 'T')
+            continue;
+        const sectors = [];
+        let ok = true;
+        for (let i = 5; i + 2 < c.length && sectors.length < 7; i += 3) {
+            const [b, a, r] = [c[i], c[i + 1], c[i + 2]];
+            if (!INT.test(b) || !INT.test(a) || !INT.test(r)) {
+                ok = false;
+                break;
+            }
+            if (Number(b) === 0 && Number(a) === 0 && Number(r) === 0)
+                break;
+            sectors.push({ bearingDeg: Number(b), altitudeFt: Number(a) * 100, radiusNm: Number(r) });
+        }
+        if (!ok || sectors.length === 0)
+            continue;
+        out.push({ pointType: Number(c[0]), ident: c[1], region: c[2], airport: c[3], bearingRef: ref, sectors });
+    }
+    return out;
+}
