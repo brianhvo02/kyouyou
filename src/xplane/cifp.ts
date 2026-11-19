@@ -79,6 +79,7 @@ export function parseCifp(text: string): CifpAirport {
   const skipped: CifpSkipped[] = [];
   const procs = new Map<string, {proc: CifpProcedure; routes: Map<string, CifpRoute>}>();
   let transitionAltitudeFt: number | null = null;
+  const missedMarks = new Map<CifpLeg, boolean>();
 
   const lines = text.split(/\r?\n/);
   lines.forEach((raw, i) => {
@@ -146,14 +147,16 @@ export function parseCifp(text: string): CifpAirport {
       procs.set(key, entry);
     }
     const routeName = f[3] ?? '';
-    let route = entry.routes.get(routeName);
+    const routeType = f[1] ?? '';
+    const routeKey = `${routeType}\u0000${routeName}`;
+    let route = entry.routes.get(routeKey);
     if (route === undefined) {
-      route = {name: routeName, routeType: f[1] ?? '', legs: []};
-      entry.routes.set(routeName, route);
+      route = {name: routeName, routeType, legs: []};
+      entry.routes.set(routeKey, route);
       entry.proc.routes.push(route);
     }
     route.legs.push(leg);
-    // Kept per leg until the route is sorted; see below.
+    // Kept until the route is sorted, below.
     missedMarks.set(leg, d[2] === 'M');
   });
 
@@ -171,8 +174,6 @@ export function parseCifp(text: string): CifpAirport {
   }
   return {runways, procedures, transitionAltitudeFt, skipped};
 }
-
-const missedMarks = new WeakMap<CifpLeg, boolean>();
 
 function roleOf(c: string): FixRole {
   if (c === 'A' || c === 'C' || c === 'D') return 'IAF';

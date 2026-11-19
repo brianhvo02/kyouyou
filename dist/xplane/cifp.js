@@ -12,6 +12,7 @@ export function parseCifp(text) {
     const skipped = [];
     const procs = new Map();
     let transitionAltitudeFt = null;
+    const missedMarks = new Map();
     const lines = text.split(/\r?\n/);
     lines.forEach((raw, i) => {
         const lineNo = i + 1;
@@ -78,14 +79,16 @@ export function parseCifp(text) {
             procs.set(key, entry);
         }
         const routeName = f[3] ?? '';
-        let route = entry.routes.get(routeName);
+        const routeType = f[1] ?? '';
+        const routeKey = `${routeType}\u0000${routeName}`;
+        let route = entry.routes.get(routeKey);
         if (route === undefined) {
-            route = { name: routeName, routeType: f[1] ?? '', legs: [] };
-            entry.routes.set(routeName, route);
+            route = { name: routeName, routeType, legs: [] };
+            entry.routes.set(routeKey, route);
             entry.proc.routes.push(route);
         }
         route.legs.push(leg);
-        // Kept per leg until the route is sorted; see below.
+        // Kept until the route is sorted, below.
         missedMarks.set(leg, d[2] === 'M');
     });
     const procedures = [];
@@ -103,7 +106,6 @@ export function parseCifp(text) {
     }
     return { runways, procedures, transitionAltitudeFt, skipped };
 }
-const missedMarks = new WeakMap();
 function roleOf(c) {
     if (c === 'A' || c === 'C' || c === 'D')
         return 'IAF';

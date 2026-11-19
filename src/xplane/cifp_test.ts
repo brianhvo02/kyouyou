@@ -148,6 +148,17 @@ describe('parseCifp', () => {
     expect(a.procedures[0].routes.map((r) => r.routeType)).toEqual(['I', 'A']);
   });
 
+  test('keeps routes with the same transition name but different route types apart', () => {
+    const a = parseCifp([
+      leg({seq: '010', type: '1', proc: 'TESTT2', trans: 'RW28L', fix: 'AAAAA'}),
+      leg({seq: '010', type: '4', proc: 'TESTT2', trans: 'RW28L', fix: 'BBBBB'}),
+      leg({seq: '020', type: '1', proc: 'TESTT2', trans: 'RW28L', fix: 'CCCCC'}),
+    ].join('\n'));
+    const routes = a.procedures[0].routes;
+    expect(routes.map((r) => [r.name, r.routeType])).toEqual([['RW28L', '1'], ['RW28L', '4']]);
+    expect(routes.map((r) => r.legs.map((l) => l.fix))).toEqual([['AAAAA', 'CCCCC'], ['BBBBB']]);
+  });
+
   test('names approach type, runway and variant', () => {
     const a = parseCifp([
       leg({row: 'APPCH', type: 'R', proc: 'R06LY', fix: 'AAAAA'}),
