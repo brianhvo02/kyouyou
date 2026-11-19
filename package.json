@@ -61,6 +61,10 @@
       "types": "./dist/xplane/aptmeta.d.ts",
       "default": "./dist/xplane/aptmeta.js"
     },
+    "./xplane/airspace": {
+      "types": "./dist/xplane/airspace.d.ts",
+      "default": "./dist/xplane/airspace.js"
+    },
     "./faa/cifp": {
       "types": "./dist/faa/cifp.d.ts",
       "default": "./dist/faa/cifp.js"
