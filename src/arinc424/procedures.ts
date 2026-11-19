@@ -28,7 +28,8 @@ export function makeLeg(f: LegFields): CifpLeg {
     pathTerm: f.pathTerm,
     alt: parseAlt(f.altDesc.trim(), f.alt1, f.alt2),
     speedKt: /^\d+$/.test(f.speed) ? Number(f.speed) : null,
-    courseDeg: /^\d+$/.test(f.course) ? Number(f.course) / 10 : null,
+    courseDeg: parseCourse(f.course),
+    courseTrue: /^\d{3}T$/.test(f.course),
     descriptor: f.descriptor,
     role: roleOf(d[3] ?? ' '),
     flyOver: d[1] === 'Y',
@@ -114,9 +115,18 @@ function parseAlt(desc: string, a1: string, a2: string): CifpAlt | null {
   const second = parseFeet(a2);
   if (desc === '') desc = ' ';
   switch (desc) {
-    case ' ': case '@': case 'X': case 'G': case 'I':
+    case 'G': case 'H': case 'I': case 'J': {
+      if (first === null) return null;
+      const alt: CifpAlt = {kind: desc === 'G' || desc === 'I' ? 'at' : 'at-or-above', ft: first};
+      if (second !== null) {
+        if (desc === 'G' || desc === 'H') alt.glideSlopeFt = second;
+        else alt.glideSlopeInterceptFt = second;
+      }
+      return alt;
+    }
+    case ' ': case '@': case 'X':
       return first === null ? null : {kind: 'at', ft: first};
-    case '+': case 'H': case 'J': case 'V':
+    case '+': case 'V':
       return first === null ? null : {kind: 'at-or-above', ft: first};
     case 'C':
       return second === null ? null : {kind: 'at-or-above', ft: second};
@@ -128,6 +138,13 @@ function parseAlt(desc: string, a1: string, a2: string): CifpAlt | null {
     default:
       return null;
   }
+}
+
+/** Course field: magnetic `dddd` in tenths of a degree, or true `dddT` in whole degrees. */
+function parseCourse(s: string): number | null {
+  if (/^\d+$/.test(s)) return Number(s) / 10;
+  if (/^\d{3}T$/.test(s)) return Number(s.slice(0, 3));
+  return null;
 }
 
 /** ARINC 424 packed latitude `N/S DD MM SS ss` (9 chars). */

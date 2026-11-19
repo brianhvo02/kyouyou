@@ -62,6 +62,23 @@ describe('parseCifp', () => {
     expect(alt(' ', '     ')).toBeNull();
   });
 
+  test('reads a true course as whole degrees and marks it true', () => {
+    const l = parseCifp(leg({proc: 'TESTT2', fix: 'ABCDE', course: '085T'})).procedures[0].routes[0].legs[0];
+    expect(l).toMatchObject({courseDeg: 85, courseTrue: true});
+    const m = parseCifp(leg({proc: 'TESTT2', fix: 'ABCDE', course: '0710'})).procedures[0].routes[0].legs[0];
+    expect(m).toMatchObject({courseDeg: 71, courseTrue: false});
+  });
+
+  test('keeps the glide slope altitude of descriptions G and H, and the intercept altitude of I and J', () => {
+    const alt = (altDesc: string, alt1: string, alt2: string) =>
+      parseCifp(leg({row: 'APPCH', type: 'I', proc: 'I24R', fix: 'ABCDE', altDesc, alt1, alt2})).procedures[0].routes[0].legs[0].alt;
+    expect(alt('G', '03000', '02900')).toEqual({kind: 'at', ft: 3000, glideSlopeFt: 2900});
+    expect(alt('H', '03000', '02900')).toEqual({kind: 'at-or-above', ft: 3000, glideSlopeFt: 2900});
+    expect(alt('I', '02500', '01700')).toEqual({kind: 'at', ft: 2500, glideSlopeInterceptFt: 1700});
+    expect(alt('J', '02500', '01700')).toEqual({kind: 'at-or-above', ft: 2500, glideSlopeInterceptFt: 1700});
+    expect(alt('J', '02500', '     ')).toEqual({kind: 'at-or-above', ft: 2500});
+  });
+
   test('reads a speed limit', () => {
     const a = parseCifp(leg({proc: 'TESTT2', fix: 'ABCDE', speed: '280', course: '0710'}));
     const l = a.procedures[0].routes[0].legs[0];

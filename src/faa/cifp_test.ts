@@ -52,7 +52,7 @@ describe('parseFaaCifp', () => {
     expect(a.procedures[0]!.routes[0]).toMatchObject({name: 'RW28L', routeType: '1'});
     expect(a.procedures[0]!.routes[0]!.legs[0]).toEqual({
       seq: 30, fix: 'PORTE', region: 'K2', pathTerm: 'DF', alt: {kind: 'at-or-below', ft: 10000}, speedKt: null,
-      courseDeg: 280.5, descriptor: 'E   ', role: null, flyOver: false, missed: false,
+      courseDeg: 280.5, courseTrue: false, descriptor: 'E   ', role: null, flyOver: false, missed: false,
     });
     expect(a.transitionAltitudeFt).toBe(18000);
   });

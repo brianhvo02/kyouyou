@@ -12,6 +12,10 @@ export interface CifpAlt {
   kind: 'at' | 'at-or-above' | 'at-or-below' | 'between';
   ft: number;
   lowerFt?: number;
+  /** Descriptions G and H: the glide slope altitude at this fix (the second altitude). */
+  glideSlopeFt?: number;
+  /** Descriptions I and J: the glide slope intercept altitude (the second altitude). */
+  glideSlopeInterceptFt?: number;
 }
 
 export type FixRole = 'IAF' | 'IF' | 'FAF' | 'MAP' | null;
@@ -24,6 +28,8 @@ export interface CifpLeg {
   alt: CifpAlt | null;
   speedKt: number | null;
   courseDeg: number | null;
+  /** The course is true, not magnetic: written `dddT` in whole degrees (used at high latitudes). */
+  courseTrue: boolean;
   /** Field 8 as written, e.g. 'EE B'. */
   descriptor: string;
   /** From descriptor position 4: A, C, D -> IAF; B -> IF; F -> FAF; M -> MAP; else null. */
