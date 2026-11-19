@@ -21,7 +21,7 @@ const ROLE_ORDER = ['twr', 'tracon', 'ctr'];
 function isRole(value) {
     return ROLES.includes(value);
 }
-/** A frequency in tens of kHz, in kHz: one ending in 2 or 7 is the 25 kHz channel it was cut from (11947 -> 119475). */
+/** A frequency in tens of kHz, in kHz: one ending in 2 or 7 is the 25 kHz channel it was cut from (12347 -> 123475). */
 export function tenKhzToKhz(value) {
     const last = value % 10;
     return value * 10 + (last === 2 || last === 7 ? 5 : 0);
@@ -35,6 +35,8 @@ export function parseAtc(text) {
     const controllers = [];
     let draft = null;
     let area = null;
+    // An area with an unreadable limit or point is left out.
+    let areaBad = false;
     for (const raw of text.split('\n')) {
         const line = raw.trim();
         const space = line.search(/\s/);
@@ -66,21 +68,28 @@ export function parseAtc(text) {
             draft.airspaceClass = rest;
         }
         else if (keyword === 'FREQ') {
-            addKhz(draft.khz, tenKhzToKhz(Number(rest)));
+            if (/^\d+$/.test(rest))
+                addKhz(draft.khz, tenKhzToKhz(Number(rest)));
         }
         else if (keyword === 'CHAN') {
-            addKhz(draft.khz, Number(rest));
+            if (/^\d+$/.test(rest))
+                addKhz(draft.khz, Number(rest));
         }
         else if (keyword === 'AIRSPACE_POLYGON_BEGIN') {
             const [floor, ceiling] = rest.split(/\s+/);
             area = { floorFt: Number(floor), ceilingFt: Number(ceiling), ring: [] };
+            areaBad = !Number.isFinite(area.floorFt) || !Number.isFinite(area.ceilingFt);
         }
         else if (keyword === 'POINT' && area !== null) {
             const [lat, lon] = rest.split(/\s+/);
-            area.ring.push({ lat: Number(lat), lon: Number(lon) });
+            const p = { lat: Number(lat), lon: Number(lon) };
+            if (Number.isFinite(p.lat) && Number.isFinite(p.lon))
+                area.ring.push(p);
+            else
+                areaBad = true;
         }
         else if (keyword === 'AIRSPACE_POLYGON_END') {
-            if (area !== null)
+            if (area !== null && !areaBad)
                 draft.areas.push(area);
             area = null;
         }

@@ -11,7 +11,7 @@ export interface Controller {
     role: ControllerRole;
     /**
      * Frequencies in kHz, without duplicates: FREQ converted from tens of kHz (25 kHz channels completed,
-     * 11947 -> 119475); CHAN kept as written, an 8.33 kHz channel name such as 132005, not the true frequency.
+     * 12347 -> 123475); CHAN kept as written, an 8.33 kHz channel name such as 132005, not the true frequency.
      */
     khz: number[];
     areas: ControllerArea[];
@@ -26,7 +26,7 @@ export interface ControllerAt extends Omit<Controller, 'areas'> {
     floorFt: number;
     ceilingFt: number;
 }
-/** A frequency in tens of kHz, in kHz: one ending in 2 or 7 is the 25 kHz channel it was cut from (11947 -> 119475). */
+/** A frequency in tens of kHz, in kHz: one ending in 2 or 7 is the 25 kHz channel it was cut from (12347 -> 123475). */
 export declare function tenKhzToKhz(value: number): number;
 /** The controllers in atc.dat text, in file order. */
 export declare function parseAtc(text: string): Controller[];

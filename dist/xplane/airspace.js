@@ -20,7 +20,7 @@ function parseLimit(s) {
 const DP = /^(\d{1,2}):(\d{2}):(\d{2}) ([NS]) (\d{1,3}):(\d{2}):(\d{2}) ([EW])$/;
 function parsePoint(s) {
     const m = DP.exec(s);
-    if (m === null)
+    if (m === null || Number(m[2]) >= 60 || Number(m[3]) >= 60 || Number(m[6]) >= 60 || Number(m[7]) >= 60)
         return null;
     const lat = Number(m[1]) + Number(m[2]) / 60 + Number(m[3]) / 3600;
     const lon = Number(m[5]) + Number(m[6]) / 60 + Number(m[7]) / 3600;
@@ -96,6 +96,8 @@ function boxOf(a) {
     return b;
 }
 /**
+ * Treat areas as read-only once queried: their bounding boxes are cached.
+ *
  * The areas that contain the position and, when `altFt` is given, whose floor ≤ altFt ≤ ceiling. GND
  * counts as 0 ft MSL (no terrain correction).
  */

@@ -15,17 +15,17 @@ describe('parseAtc', () => {
   test('reads a tower with ICAO, transition altitude, class, frequencies and an area', () => {
     const [c] = parseAtc(block([
       'NAME TEST TOWER', 'FACILITY_ID KTST', 'ROLE twr', 'ICAO KTST', 'TRANSITION_ALT 18000', 'CLASS D',
-      'FREQ 11810', 'FREQ 11947', 'CHAN 121900', 'VOICE_DEF 1', ...square(0, 2500),
+      'FREQ 11810', 'FREQ 12347', 'CHAN 121900', 'VOICE_DEF 1', ...square(0, 2500),
     ]));
     expect(c).toEqual({
-      name: 'TEST TOWER', facilityId: 'KTST', role: 'twr', khz: [118100, 119475, 121900],
+      name: 'TEST TOWER', facilityId: 'KTST', role: 'twr', khz: [118100, 123475, 121900],
       areas: [{floorFt: 0, ceilingFt: 2500, ring: [{lat: 37, lon: -122}, {lat: 38, lon: -122}, {lat: 38, lon: -123}, {lat: 37, lon: -123}]}],
       icao: 'KTST', transitionAltitudeFt: 18000, airspaceClass: 'D',
     });
   });
 
   test('tenKhzToKhz adds 5 to channels ending in 2 or 7', () => {
-    expect(tenKhzToKhz(11947)).toBe(119475);
+    expect(tenKhzToKhz(12347)).toBe(123475);
     expect(tenKhzToKhz(11810)).toBe(118100);
     expect(tenKhzToKhz(12192)).toBe(121925);
     expect(tenKhzToKhz(11955)).toBe(119550);
@@ -39,6 +39,19 @@ describe('parseAtc', () => {
   test('keeps a CHAN channel name as written', () => {
     const [c] = parseAtc(tower('NAMES', ['CHAN 132005']));
     expect(c!.khz).toContain(132005);
+  });
+
+  test('a FREQ or CHAN without a whole number adds nothing', () => {
+    const [c] = parseAtc(tower('BAD', ['FREQ', 'FREQ abc', 'CHAN', 'FREQ 118.1']));
+    expect(c!.khz).toEqual([118100]);
+  });
+
+  test('drops an area with an unreadable limit or point', () => {
+    const [c] = parseAtc(block(['NAME T', 'FACILITY_ID KTST', 'ROLE twr', 'FREQ 11810',
+      'AIRSPACE_POLYGON_BEGIN x 2500', 'POINT 37 -122', 'POINT 38 -122', 'POINT 38 -123', 'AIRSPACE_POLYGON_END',
+      'AIRSPACE_POLYGON_BEGIN 0 2500', 'POINT 37 -122', 'POINT 38 x', 'POINT 38 -123', 'AIRSPACE_POLYGON_END',
+      ...square(0, 2500)]));
+    expect(c!.areas).toHaveLength(1);
   });
 
   test('skips a controller with an unknown role', () => {

@@ -15,6 +15,8 @@ export interface Airspace {
 /** The areas in airspace.txt text, in file order. */
 export declare function parseAirspaces(text: string): Airspace[];
 /**
+ * Treat areas as read-only once queried: their bounding boxes are cached.
+ *
  * The areas that contain the position and, when `altFt` is given, whose floor ≤ altFt ≤ ceiling. GND
  * counts as 0 ft MSL (no terrain correction).
  */

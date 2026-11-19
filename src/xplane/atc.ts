@@ -32,7 +32,7 @@ export interface Controller {
   role: ControllerRole;
   /**
    * Frequencies in kHz, without duplicates: FREQ converted from tens of kHz (25 kHz channels completed,
-   * 11947 -> 119475); CHAN kept as written, an 8.33 kHz channel name such as 132005, not the true frequency.
+   * 12347 -> 123475); CHAN kept as written, an 8.33 kHz channel name such as 132005, not the true frequency.
    */
   khz: number[];
   areas: ControllerArea[];
@@ -57,7 +57,7 @@ function isRole(value: string): value is ControllerRole {
   return ROLES.includes(value);
 }
 
-/** A frequency in tens of kHz, in kHz: one ending in 2 or 7 is the 25 kHz channel it was cut from (11947 -> 119475). */
+/** A frequency in tens of kHz, in kHz: one ending in 2 or 7 is the 25 kHz channel it was cut from (12347 -> 123475). */
 export function tenKhzToKhz(value: number): number {
   const last = value % 10;
   return value * 10 + (last === 2 || last === 7 ? 5 : 0);
@@ -83,6 +83,8 @@ export function parseAtc(text: string): Controller[] {
   const controllers: Controller[] = [];
   let draft: Draft | null = null;
   let area: ControllerArea | null = null;
+  // An area with an unreadable limit or point is left out.
+  let areaBad = false;
 
   for (const raw of text.split('\n')) {
     const line = raw.trim();
@@ -108,17 +110,20 @@ export function parseAtc(text: string): Controller[] {
     } else if (keyword === 'CLASS' && rest !== '') {
       draft.airspaceClass = rest;
     } else if (keyword === 'FREQ') {
-      addKhz(draft.khz, tenKhzToKhz(Number(rest)));
+      if (/^\d+$/.test(rest)) addKhz(draft.khz, tenKhzToKhz(Number(rest)));
     } else if (keyword === 'CHAN') {
-      addKhz(draft.khz, Number(rest));
+      if (/^\d+$/.test(rest)) addKhz(draft.khz, Number(rest));
     } else if (keyword === 'AIRSPACE_POLYGON_BEGIN') {
       const [floor, ceiling] = rest.split(/\s+/);
       area = {floorFt: Number(floor), ceilingFt: Number(ceiling), ring: []};
+      areaBad = !Number.isFinite(area.floorFt) || !Number.isFinite(area.ceilingFt);
     } else if (keyword === 'POINT' && area !== null) {
       const [lat, lon] = rest.split(/\s+/);
-      area.ring.push({lat: Number(lat), lon: Number(lon)});
+      const p = {lat: Number(lat), lon: Number(lon)};
+      if (Number.isFinite(p.lat) && Number.isFinite(p.lon)) area.ring.push(p);
+      else areaBad = true;
     } else if (keyword === 'AIRSPACE_POLYGON_END') {
-      if (area !== null) draft.areas.push(area);
+      if (area !== null && !areaBad) draft.areas.push(area);
       area = null;
     } else if (keyword === 'CONTROLLER_END') {
       if (isRole(draft.role)) {

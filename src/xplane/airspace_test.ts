@@ -37,6 +37,10 @@ describe('parseAirspaces', () => {
     expect(a.map((x) => x.name)).toEqual(['GOOD']);
   });
 
+  test('drops an area with out-of-range minutes or seconds', () => {
+    expect(parseAirspaces(['AC R', 'AN BAD', 'AL GND', 'AH 1000 MSL', 'DP 01:99:00 N 001:00:00 E', 'DP 02:00:00 N 001:00:00 E', 'DP 02:00:00 N 002:00:00 E'].join('\n'))).toEqual([]);
+  });
+
   test('skips an area with an unreadable limit', () => {
     expect(parseAirspaces(square('D', 'BAD', 'SFC', '2500 MSL'))).toEqual([]);
   });
