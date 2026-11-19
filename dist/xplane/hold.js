@@ -1,7 +1,8 @@
 // Reader for X-Plane's earth_hold.dat (spec XP HOLD1140): published holds not part of a terminal
 // procedure. Row: ident, region, terminal airport or ENRT, fix type (11 fix, 2 NDB, 3 VHF navaid),
 // inbound course (magnetic), leg time (min, 0 for a DME hold), DME leg length (NM, 0 for a timed hold),
-// turn L or R, minimum altitude, maximum altitude, speed limit (ft, ft, kt; 0 when none). Never throws:
+// turn L or R, minimum altitude, maximum altitude, speed limit (ft, ft, kt; 0 when none). A course of
+// 360° is written 0 (kept as written). Never throws:
 // malformed rows are skipped; an unsupported version gives none.
 import { datRows } from "./datfile.js";
 const NUM = /^\d+(\.\d+)?$/;
