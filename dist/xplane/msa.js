@@ -3,7 +3,8 @@
 // airport (the same point can have different MSAs per airport), bearing reference M or T, then up to
 // seven sectors of bearing (deg), altitude (hundreds of ft) and radius (NM), ended by `000 000 0`. Each
 // sector's bearing is as ARINC 424 publishes it (field 5.146), except that X-Plane writes 360° as 0 (kept as written). Never throws: malformed rows are skipped;
-// an unsupported version gives none.
+// an unsupported version gives none. Sectors with a 0 altitude or 0 radius are left out, and a row left
+// with no sectors is skipped.
 import { datRows } from "./datfile.js";
 const INT = /^\d+$/;
 export function parseMsa(text) {
@@ -27,6 +28,9 @@ export function parseMsa(text) {
             }
             if (Number(b) === 0 && Number(a) === 0 && Number(r) === 0)
                 break;
+            // A sector with no altitude or no radius is not a usable MSA (real files have a few); leave it out.
+            if (Number(a) === 0 || Number(r) === 0)
+                continue;
             sectors.push({ bearingDeg: Number(b), altitudeFt: Number(a) * 100, radiusNm: Number(r) });
         }
         if (!ok || sectors.length === 0)

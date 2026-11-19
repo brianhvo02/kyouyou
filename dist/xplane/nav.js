@@ -2,14 +2,15 @@
 // its agreement, widened from NDB and VOR to every row type. Row: code, lat, lon, elevation (ft),
 // frequency, range, value, ident, terminal airport or ENRT, ICAO region, [runway], name.
 //
-// Fields are kept as written; their meaning depends on the row code (NAV1200):
-//   2 NDB            frequency kHz; range NM; value unused
-//   3 VOR/VORTAC     frequency tens of kHz (11500 = 115.00 MHz); range NM; value = slaved variation
-//   4 LOC (ILS) 5 LOC frequency tens of kHz; value = localizer true bearing
+// Fields are kept as written; their meaning depends on the row code (NAV1200, check the spec for detail):
+//   2 NDB            frequency whole kHz; range = class code; value = BFO flag
+//   3 VOR/VORTAC     frequency tens of kHz (11500 = 115.00 MHz); range = class code; value = slaved variation
+//   4 LOC (ILS) 5 LOC frequency tens of kHz; value = magnetic front course × 360 + true bearing
+//                    (front course = Math.floor(value / 360), true bearing = value % 360)
 //   6 GS             frequency tens of kHz; value = glide angle × 100000 + true bearing
 //   7 OM 8 MM 9 IM   value = true bearing
 //   12 DME (ILS) 13 DME  frequency tens of kHz; value = DME bias NM
-//   14 FPAP 15 GLS 16 LTP/FTP  path points of SBAS/GBAS approaches; see the spec
+//   14 FPAP 15 GLS 16 LTP/FTP  path points of SBAS/GBAS approaches; range is a length with decimals; see the spec
 // Rows 4–9 and 14–16 have a runway column before the name; 12 has none. Never throws: unknown row codes
 // and malformed rows are skipped; an unsupported version gives nothing.
 import { datRows } from "./datfile.js";

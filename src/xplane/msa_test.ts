@@ -6,8 +6,8 @@ const file = (rows: string[], version = '1150') => ['I', `${version} Version - m
 
 describe('parseMsa', () => {
   test('reads one sector, with altitude in hundreds of feet', () => {
-    expect(parseMsa(file(['11 TSTAA ZZ KTST M 180 025 25 000 000 0']))).toEqual([
-      {pointType: 11, ident: 'TSTAA', region: 'ZZ', airport: 'KTST', bearingRef: 'M', sectors: [{bearingDeg: 180, altitudeFt: 2500, radiusNm: 25}]},
+    expect(parseMsa(file(['11 TSTAA ZZ KTST M 090 041 30 000 000 0']))).toEqual([
+      {pointType: 11, ident: 'TSTAA', region: 'ZZ', airport: 'KTST', bearingRef: 'M', sectors: [{bearingDeg: 90, altitudeFt: 4100, radiusNm: 30}]},
     ]);
   });
 
@@ -19,8 +19,14 @@ describe('parseMsa', () => {
     expect(m!.sectors[6]).toEqual({bearingDeg: 300, altitudeFt: 3600, radiusNm: 25});
   });
 
+  test('drops sectors with a 0 ft altitude or 0 NM radius, and a row left with none', () => {
+    expect(parseMsa(file(['3 TSTA ZZ KTST M 180 000 0 068 000 0']))).toEqual([]);
+    const [m] = parseMsa(file(['3 TSTA ZZ KTST M 120 000 0 300 047 30 000 000 0']));
+    expect(m!.sectors).toEqual([{bearingDeg: 300, altitudeFt: 4700, radiusNm: 30}]);
+  });
+
   test('skips a row without sectors or with a bad reference, and returns nothing for another version', () => {
-    expect(parseMsa(file(['11 TSTAA ZZ KTST M 000 000 0', '11 TSTAA ZZ KTST X 180 025 25 000 000 0']))).toEqual([]);
-    expect(parseMsa(file(['11 TSTAA ZZ KTST M 180 025 25 000 000 0'], '1140'))).toEqual([]);
+    expect(parseMsa(file(['11 TSTAA ZZ KTST M 000 000 0', '11 TSTAA ZZ KTST X 090 041 30 000 000 0']))).toEqual([]);
+    expect(parseMsa(file(['11 TSTAA ZZ KTST M 090 041 30 000 000 0'], '1140'))).toEqual([]);
   });
 });
