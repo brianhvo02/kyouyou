@@ -41,6 +41,22 @@ describe('parseAirspaces', () => {
     expect(parseAirspaces(square('D', 'BAD', 'SFC', '2500 MSL'))).toEqual([]);
   });
 
+  test('a malformed AC line starts a new area instead of merging the next one into the previous', () => {
+    for (const bad of ['AC', 'AC\tD']) {
+      const a = parseAirspaces([square('D', 'FIRST', 'GND', '2500 MSL'), bad, 'AN SECOND', 'AL 500 MSL', 'AH 900 MSL', 'DP 40:00:00 N 100:00:00 W', 'DP 41:00:00 N 100:00:00 W', 'DP 41:00:00 N 101:00:00 W'].join('\n'));
+      expect(a.map((x) => x.name)).toContain('FIRST');
+      expect(a.find((x) => x.name === 'FIRST')!.ring).toHaveLength(4);
+      expect(a.filter((x) => x.name === 'SECOND').every((x) => x.ring.length === 3)).toBe(true);
+    }
+  });
+
+  test('reads keywords separated by a tab', () => {
+    const a = parseAirspaces(['AC\tR', 'AN\tTAB', 'AL\tGND', 'AH\t1000 MSL', 'DP\t37:00:00 N 122:00:00 W', 'DP 38:00:00 N 122:00:00 W', 'DP 38:00:00 N 123:00:00 W'].join('\n'));
+    expect(a).toHaveLength(1);
+    expect(a[0]).toMatchObject({class: 'R', name: 'TAB'});
+    expect(a[0]!.ring).toHaveLength(3);
+  });
+
   test('reads CRLF text the same as LF', () => {
     const lf = `${square('D', 'ONE', 'GND', '2500 MSL')}\n`;
     expect(parseAirspaces(lf.replace(/\n/g, '\r\n'))).toEqual(parseAirspaces(lf));
@@ -55,6 +71,11 @@ describe('airspacesAt', () => {
     expect(airspacesAt(all, 37.5, -122.5, 6000)).toEqual([]);
     expect(airspacesAt(all, 37.5, -122.5).map((a) => a.name)).toEqual(['BOX']);
     expect(airspacesAt(all, 30, -100)).toEqual([]);
+  });
+
+  test('returns no match, without throwing, for an area with an empty ring', () => {
+    const empty = {class: 'A', name: 'EMPTY', floor: {ft: 0, ref: 'GND' as const}, ceiling: {ft: 1000, ref: 'MSL' as const}, ring: []};
+    expect(airspacesAt([empty], 0, 0)).toEqual([]);
   });
 
   test('handles an area across the antimeridian', () => {

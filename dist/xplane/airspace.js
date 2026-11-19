@@ -7,8 +7,9 @@
 //   AH <ceiling>
 //   DP DD:MM:SS N DDD:MM:SS W     one per corner, at least three
 //
-// with no arcs or circles. Anything else is skipped, never thrown on; an area with an unreadable limit or
-// fewer than three corners is left out.
+// with no arcs or circles. Anything else is skipped, never thrown on; an area with no class, an unreadable
+// limit, an unreadable corner or fewer than three corners is left out. Keywords may be followed by any
+// whitespace.
 import { pointInPolygon } from "../geo/polygon.js";
 function parseLimit(s) {
     if (s === 'GND')
@@ -37,14 +38,16 @@ export function parseAirspaces(text) {
     };
     for (const raw of text.split('\n')) {
         const line = raw.trim();
-        const key = line.slice(0, 2);
-        const rest = line.slice(2).trim();
-        if (key === 'AC' && line[2] === ' ') {
+        const space = line.search(/\s/);
+        const key = space < 0 ? line : line.slice(0, space);
+        const rest = space < 0 ? '' : line.slice(space).trim().replace(/\s+/g, ' ');
+        if (key === 'AC') {
+            // Every AC line ends the previous area, even one this reader can't use (no class): never merge two areas.
             finish();
-            d = { class: rest, name: '', floor: undefined, ceiling: undefined, ring: [], bad: false };
+            d = { class: rest, name: '', floor: undefined, ceiling: undefined, ring: [], bad: rest === '' };
             continue;
         }
-        if (d === null || line[2] !== ' ')
+        if (d === null)
             continue;
         const cur = d;
         if (key === 'AN')
@@ -98,6 +101,8 @@ function boxOf(a) {
  */
 export function airspacesAt(airspaces, lat, lon, altFt) {
     return airspaces.filter((a) => {
+        if (a.ring.length < 3)
+            return false;
         if (altFt !== undefined && (altFt < a.floor.ft || altFt > a.ceiling.ft))
             return false;
         const b = boxOf(a);
