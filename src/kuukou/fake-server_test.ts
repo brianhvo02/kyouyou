@@ -40,6 +40,33 @@ describe('fakeKuukouHandler', () => {
   });
 });
 
+describe('fakeKuukouHandler, as the real server behaves', () => {
+  const more = {
+    xplane: {'earth_nav.dat': '0123456789', 'plugins/evil.dll': 'x'},
+    jeppesen: {'TerminalCharts/Charts.bin': '0123456789', 'TerminalCharts/charts.dbf': 'dbf', 'Other/readme.txt': 'x', 'Data1/Obstacle12.J3N': 'abc'},
+  };
+  const get = (path: string, init?: RequestInit) => fakeKuukouHandler(more)(new Request(`http://fake${path}`, init));
+
+  test('answers 404 for a malformed escape instead of failing', async () => {
+    expect((await get('/kuukou/api/files/xplane/%')).status).toBe(404);
+  });
+
+  test('serves and lists only the allow-listed files', async () => {
+    expect((await get('/kuukou/api/files/xplane/plugins/evil.dll')).status).toBe(404);
+    expect((await get('/kuukou/api/files/jeppesen/Other/readme.txt')).status).toBe(404);
+    expect((await get('/kuukou/api/files/jeppesen/Data1/Obstacle12.J3N')).status).toBe(200);
+    expect((await (await get('/kuukou/api/files/xplane/?manifest')).json())).toEqual([{path: 'earth_nav.dat', size: 10}]);
+  });
+
+  test('honours Range only on .bin, .J3N and .J3G, including a suffix range', async () => {
+    const r = await get('/kuukou/api/files/jeppesen/TerminalCharts/Charts.bin', {headers: {range: 'bytes=-3'}});
+    expect(r.status).toBe(206);
+    expect(r.headers.get('content-range')).toBe('bytes 7-9/10');
+    expect((await get('/kuukou/api/files/xplane/earth_nav.dat', {headers: {range: 'bytes=0-1'}})).status).toBe(200);
+    expect((await get('/kuukou/api/files/jeppesen/TerminalCharts/charts.dbf', {headers: {range: 'bytes=0-1'}})).status).toBe(200);
+  });
+});
+
 describe('startFakeKuukou', () => {
   let server: FakeKuukou | undefined;
   afterEach(async () => { await server?.close(); });
