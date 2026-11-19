@@ -65,6 +65,10 @@
       "types": "./dist/xplane/airspace.d.ts",
       "default": "./dist/xplane/airspace.js"
     },
+    "./xplane/atc": {
+      "types": "./dist/xplane/atc.d.ts",
+      "default": "./dist/xplane/atc.js"
+    },
     "./faa/cifp": {
       "types": "./dist/faa/cifp.d.ts",
       "default": "./dist/faa/cifp.js"
