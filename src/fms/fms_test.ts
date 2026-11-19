@@ -172,6 +172,21 @@ describe('writeFms', () => {
     expect(text.endsWith('\n')).toBe(true);
   });
 
+  it('writes the approach after the STAR, as X-Plane does, in named mode', () => {
+    const text = writeFms({...plan, approach: {name: 'I27R', transition: 'STARB'}}, 'named');
+    expect(text).toContain(['ADES KDDD', 'DESRWY RW27R', 'STAR STARB2', 'APP I27R', 'APPTRANS STARB', 'NUMENR 5', ''].join('\n'));
+    expect(writeFms({...plan, approach: {name: 'I27R'}}, 'named')).toContain('STAR STARB2\nAPP I27R\nNUMENR 5\n');
+    expect(writeFms({...plan, star: undefined, approach: {name: 'I27R'}}, 'named')).toContain('ADES KDDD\nAPP I27R\nNUMENR 6\n');
+  });
+  it('leaves the approach out in waypoints mode', () => {
+    expect(writeFms({...plan, approach: {name: 'I27R', transition: 'STARB'}}, 'waypoints')).not.toMatch(/^APP/m);
+  });
+  it('reads back the approach it wrote', () => {
+    expect(ok(parseFms(writeFms({...plan, approach: {name: 'I27R', transition: 'STARB'}}, 'named'))).approach).toEqual({name: 'I27R', transition: 'STARB'});
+    expect(ok(parseFms(writeFms({...plan, approach: {name: 'I27R'}}, 'named'))).approach).toEqual({name: 'I27R'});
+    expect(ok(parseFms(writeFms(plan, 'named'))).approach).toBeUndefined();
+  });
+
   it('reads back what it wrote, in both modes', () => {
     const named = ok(parseFms(writeFms(plan, 'named')));
     expect(named).toMatchObject({

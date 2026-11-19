@@ -35,7 +35,7 @@ export interface FmsPlan {
   arrivalRunway?: string;
   sid?: FmsProcedure;
   star?: FmsProcedure;
-  /** X-Plane's own FMS writes the approach; Kouro does not. */
+  /** X-Plane's own FMS writes the approach, and `writeFms` does in named mode. */
   approach?: FmsApproach;
   points: FmsPoint[];
   /** The airports among the points, each once, in order. */
@@ -155,6 +155,8 @@ export interface FmsWritePlan {
   dest: FmsWritePoint;
   sid?: FmsProcedure;
   star?: FmsProcedure;
+  /** Named mode only: written as APP (and APPTRANS) after the STAR lines, where X-Plane's own FMS puts them. */
+  approach?: FmsApproach;
   /** Written on every en-route point; the airports get 0. There are no step climbs in the format. */
   cruiseAltitudeFt: number;
   /** Every leg between the airports, the procedures' legs included. */
@@ -196,6 +198,10 @@ export function writeFms(plan: FmsWritePlan, mode: FmsMode): string {
   if (plan.star && starRunway !== undefined) {
     header.push(`DESRWY ${withRw(starRunway)}`, `STAR ${plan.star.name}`);
     if (plan.star.transition !== undefined) header.push(`STARTRANS ${plan.star.transition}`);
+  }
+  if (named && plan.approach) {
+    header.push(`APP ${plan.approach.name}`);
+    if (plan.approach.transition !== undefined) header.push(`APPTRANS ${plan.approach.transition}`);
   }
 
   const lines: string[] = [pointLine(plan.origin, 'ADEP', 0)];

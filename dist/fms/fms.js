@@ -130,6 +130,11 @@ export function writeFms(plan, mode) {
         if (plan.star.transition !== undefined)
             header.push(`STARTRANS ${plan.star.transition}`);
     }
+    if (named && plan.approach) {
+        header.push(`APP ${plan.approach.name}`);
+        if (plan.approach.transition !== undefined)
+            header.push(`APPTRANS ${plan.approach.transition}`);
+    }
     const lines = [pointLine(plan.origin, 'ADEP', 0)];
     for (const leg of plan.legs) {
         if (expandedBySim(leg.via))
