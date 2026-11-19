@@ -69,6 +69,30 @@
       "types": "./dist/xplane/atc.d.ts",
       "default": "./dist/xplane/atc.js"
     },
+    "./xplane/fix": {
+      "types": "./dist/xplane/fix.d.ts",
+      "default": "./dist/xplane/fix.js"
+    },
+    "./xplane/nav": {
+      "types": "./dist/xplane/nav.d.ts",
+      "default": "./dist/xplane/nav.js"
+    },
+    "./xplane/awy": {
+      "types": "./dist/xplane/awy.d.ts",
+      "default": "./dist/xplane/awy.js"
+    },
+    "./xplane/hold": {
+      "types": "./dist/xplane/hold.d.ts",
+      "default": "./dist/xplane/hold.js"
+    },
+    "./xplane/msa": {
+      "types": "./dist/xplane/msa.d.ts",
+      "default": "./dist/xplane/msa.js"
+    },
+    "./xplane/mora": {
+      "types": "./dist/xplane/mora.d.ts",
+      "default": "./dist/xplane/mora.js"
+    },
     "./faa/cifp": {
       "types": "./dist/faa/cifp.d.ts",
       "default": "./dist/faa/cifp.js"
