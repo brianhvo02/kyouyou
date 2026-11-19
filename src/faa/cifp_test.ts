@@ -196,4 +196,27 @@ describe('parseFaaCifp', () => {
     expect(fromFaa.skipped).toEqual([]);
     expect(fromFaa.airports.get('KTST')).toEqual(fromXp);
   });
+
+  test('reads a below-sea-level altitude on a leg', () => {
+    const a = only([leg({sub: 'F', proc: 'R12', type: 'R', fix: 'RW12', pt: 'TF', altDesc: ' ', alt1: '-0120'})]);
+    expect(a.procedures[0]!.routes[0]!.legs[0]!.alt).toEqual({kind: 'at', ft: -120});
+  });
+
+  test('takes the transition altitude from the airport record, also for an airport without procedures', () => {
+    const r = parse([
+      airportRecord('KTST', '06000'),
+      runway('RW12', 'N33300000', 'W116100000', '-0100'),
+    ]);
+    expect(r.airports.get('KTST')!.transitionAltitudeFt).toBe(6000);
+  });
+
+  test('an airport record alone does not add an airport', () => {
+    const r = parse([airportRecord('KONE', '18000')]);
+    expect(r.airports.size).toBe(0);
+  });
 });
+
+// A made-up airport primary record (subsection A): transition altitude in columns 71–75.
+function airportRecord(id: string, ta: string): string {
+  return record({1: 'S', 2: 'USA', 5: 'P', 7: id, 11: 'K2', 13: 'A', 22: '0', 33: 'N33300000', 42: 'W116100000', 71: ta, 124: '12345', 129: '2611'});
+}

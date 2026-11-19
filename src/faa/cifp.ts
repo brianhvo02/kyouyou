@@ -3,9 +3,9 @@
 // X-Plane per-airport file, by the same rules (shared in ../arinc424/procedures.ts).
 //
 // Read: airport section P (column 5, column 6 blank) with subsection (column 13) D SID, E STAR,
-// F approach and G runway. Primary records only (continuation number 0 or 1); continuation records
+// F approach and G runway, plus A (the airport record) for its transition altitude. Primary records only (continuation number 0 or 1); continuation records
 // (2 and up) carry nothing this shape keeps and are passed over. Every other record (header, enroute,
-// heliports, terminal NDBs, airport reference records and so on) is ignored, not skipped.
+// heliports, terminal NDBs and so on) is ignored, not skipped.
 
 import type {CifpAirport, CifpProcedure, CifpRunway, CifpSkipped} from '../xplane/cifp.ts';
 import {makeLeg, parseElevation, parseFeet, parseLat, parseLon, procedureCollector} from '../arinc424/procedures.ts';
@@ -36,6 +36,8 @@ interface Building {
 export function parseFaaCifp(lines: Iterable<string>): FaaCifp {
   const building = new Map<string, Building>();
   const skipped: CifpSkipped[] = [];
+  // Transition altitude from each airport record (columns 71–75); used for airports read from the other records.
+  const airportTa = new Map<string, number | null>();
   let lineNo = 0;
 
   for (const raw of lines) {
@@ -44,7 +46,11 @@ export function parseFaaCifp(lines: Iterable<string>): FaaCifp {
     // 1-based columns, as in the ARINC 424 layout.
     const col = (from: number, to = from): string => r.slice(from - 1, to);
     const sub = col(13);
-    if (col(1) !== 'S' || col(5) !== 'P' || col(6) !== ' ' || !'DEFG'.includes(sub) || sub === ' ') continue;
+    if (col(1) !== 'S' || col(5) !== 'P' || col(6) !== ' ' || !'ADEFG'.includes(sub) || sub === ' ') continue;
+    if (sub === 'A') {
+      if (/^[01]$/.test(col(22))) airportTa.set(col(7, 10).trim(), parseFeet(col(71, 75).trim()));
+      continue;
+    }
 
     const ident = col(7, 10).trim();
     if (ident === '') {
@@ -98,7 +104,8 @@ export function parseFaaCifp(lines: Iterable<string>): FaaCifp {
 
   const airports = new Map<string, CifpAirport>();
   for (const [ident, a] of building) {
-    airports.set(ident, {runways: a.runways, procedures: a.procedures.finish(), transitionAltitudeFt: a.transitionAltitudeFt, skipped: a.skipped});
+    const transitionAltitudeFt = airportTa.get(ident) ?? a.transitionAltitudeFt;
+    airports.set(ident, {runways: a.runways, procedures: a.procedures.finish(), transitionAltitudeFt, skipped: a.skipped});
   }
   return {airports, skipped};
 }

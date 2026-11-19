@@ -104,7 +104,7 @@ function approachInfo(name: string): Pick<CifpProcedure, 'approachType' | 'runwa
 
 /** Feet, or `FL240` (24,000). Anything else is null. */
 export function parseFeet(s: string): number | null {
-  if (/^\d+$/.test(s)) return Number(s);
+  if (/^-?\d+$/.test(s)) return Number(s);
   const fl = /^FL(\d+)$/.exec(s);
   return fl === null ? null : Number(fl[1]) * 100;
 }

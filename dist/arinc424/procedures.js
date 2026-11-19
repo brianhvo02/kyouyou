@@ -80,7 +80,7 @@ function approachInfo(name) {
 }
 /** Feet, or `FL240` (24,000). Anything else is null. */
 export function parseFeet(s) {
-    if (/^\d+$/.test(s))
+    if (/^-?\d+$/.test(s))
         return Number(s);
     const fl = /^FL(\d+)$/.exec(s);
     return fl === null ? null : Number(fl[1]) * 100;
