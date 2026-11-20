@@ -14,7 +14,7 @@
 
    Sign yellow is a fill (signs, focus ring), never text on the ground. */
 
-:root {
+:where(:root) {
   /* The palette. These are the physical colours of the family and do not change with the theme. */
   --kk-chart-paper: #eef1ec;
   --kk-chart-ink: #18232e;
@@ -88,7 +88,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :where(:root:not([data-theme="light"])) {
     --kk-ground: #0f1922;
     --kk-surface: var(--kk-chart-ink);
     --kk-ink: #e3e8e1;
@@ -99,7 +99,7 @@
   }
 }
 
-:root[data-theme="dark"] {
+:where(:root[data-theme="dark"]) {
   --kk-ground: #0f1922;
   --kk-surface: var(--kk-chart-ink);
   --kk-ink: #e3e8e1;
@@ -112,19 +112,19 @@
 /* Accents on part of a page. --kk-accent-text is worked out where it is declared, so an element
    that sets its own accent carries data-kk-accent and gets the text colour worked out again there.
    data-kk-accent="kouro" (or any member) also sets the accent and its on-colour; a bare
-   data-kk-accent keeps an accent set in the element's own CSS. Zero specificity: an app's rules win.
-   The root takes its accent from the one line on :root above, not from this attribute. */
+   data-kk-accent keeps an accent set in the element's own CSS. It works on the root element too.
+   Zero specificity, like every rule here: an app's own rules win. */
 :where([data-kk-accent]) {
   --kk-accent-text: oklch(from var(--kk-accent) min(l, 0.5) c h);
 }
 
 @media (prefers-color-scheme: dark) {
-  :where(:root:not([data-theme="light"]) [data-kk-accent]) {
+  :where(:root:not([data-theme="light"])[data-kk-accent], :root:not([data-theme="light"]) [data-kk-accent]) {
     --kk-accent-text: oklch(from var(--kk-accent) max(l, 0.75) c h);
   }
 }
 
-:where(:root[data-theme="dark"] [data-kk-accent]) {
+:where(:root[data-theme="dark"][data-kk-accent], :root[data-theme="dark"] [data-kk-accent]) {
   --kk-accent-text: oklch(from var(--kk-accent) max(l, 0.75) c h);
 }
 

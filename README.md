@@ -76,7 +76,9 @@ URLs are relative, so a bundler that cannot load them fails the build rather tha
 :root { --kk-accent: var(--kk-kouro); }
 ```
 
-Set `--kk-accent` on `:root` (where `--kk-accent-text` is worked out). An app that fills a control
+Set `--kk-accent` on `:root` (where `--kk-accent-text` is worked out). Every rule in `tokens.css` sits
+in `:where()` and weighs nothing, so an app's own `:root { --kk-ground: … }` wins in light and dark
+alike. An app that fills a control
 with its accent also sets `--kk-on-accent: var(--kk-on-kouro)`. Sign yellow is for signs and the
 focus ring, never for text on the ground; use `--kk-accent-text` for text.
 

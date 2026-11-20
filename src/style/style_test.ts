@@ -48,9 +48,9 @@ function block(source: string, selector: string): Map<string, string> {
 }
 
 const tokens = (): string => read('tokens.css');
-const light = (): Map<string, string> => block(tokens(), ':root');
-const darkByOs = (): Map<string, string> => block(tokens(), ':root:not([data-theme="light"])');
-const darkBySwitch = (): Map<string, string> => block(tokens(), ':root[data-theme="dark"]');
+const light = (): Map<string, string> => block(tokens(), ':where(:root)');
+const darkByOs = (): Map<string, string> => block(tokens(), ':where(:root:not([data-theme="light"]))');
+const darkBySwitch = (): Map<string, string> => block(tokens(), ':where(:root[data-theme="dark"])');
 
 describe('tokens.css', () => {
   test('defines every promised property on :root', () => {
@@ -67,7 +67,22 @@ describe('tokens.css', () => {
   });
 
   test('puts the OS dark block inside prefers-color-scheme: dark', () => {
-    expect(tokens()).toMatch(/@media \(prefers-color-scheme: dark\) \{\s*:root:not\(\[data-theme="light"\]\) \{/);
+    expect(tokens()).toMatch(/@media \(prefers-color-scheme: dark\) \{\s*:where\(:root:not\(\[data-theme="light"\]\)\) \{/);
+  });
+
+  test("weighs nothing, so an app's own :root rule wins in light and dark alike", () => {
+    const css = tokens().replace(/\/\*[\s\S]*?\*\//g, '');
+    const preludes = [...css.matchAll(/([^{};]+)\{/g)].map((m) => m[1]!.trim()).filter((p) => !p.startsWith('@'));
+    expect(preludes.length).toBeGreaterThan(5);
+    for (const p of preludes) expect.soft(p).toMatch(/^:where\(.*\)$/);
+  });
+
+  test('puts both dark blocks after the light one, so dark wins at the same specificity', () => {
+    const css = tokens().replace(/\/\*[\s\S]*?\*\//g, '');
+    const at = (sel: string): number => css.indexOf(`${sel} {`);
+    expect(at(':where(:root)')).toBeGreaterThanOrEqual(0);
+    expect(at(':where(:root:not([data-theme="light"]))')).toBeGreaterThan(at(':where(:root)'));
+    expect(at(':where(:root[data-theme="dark"])')).toBeGreaterThan(at(':where(:root)'));
   });
 
   test('keeps the palette from the design', () => {
@@ -103,10 +118,10 @@ describe('tokens.css', () => {
     test('works out accent text again wherever data-kk-accent sets the accent, in each theme', () => {
       expect(light().get('--kk-accent-text')).toBe(LIGHT_TEXT);
       expect(block(tokens(), ':where([data-kk-accent])').get('--kk-accent-text')).toBe(LIGHT_TEXT);
-      expect(block(tokens(), ':where(:root:not([data-theme="light"]) [data-kk-accent])').get('--kk-accent-text')).toBe(DARK_TEXT);
-      expect(block(tokens(), ':where(:root[data-theme="dark"] [data-kk-accent])').get('--kk-accent-text')).toBe(DARK_TEXT);
+      expect(block(tokens(), ':where(:root:not([data-theme="light"])[data-kk-accent], :root:not([data-theme="light"]) [data-kk-accent])').get('--kk-accent-text')).toBe(DARK_TEXT);
+      expect(block(tokens(), ':where(:root[data-theme="dark"][data-kk-accent], :root[data-theme="dark"] [data-kk-accent])').get('--kk-accent-text')).toBe(DARK_TEXT);
       expect(tokens()).toMatch(
-        /@media \(prefers-color-scheme: dark\) \{\s*:where\(:root:not\(\[data-theme="light"\]\) \[data-kk-accent\]\) \{/,
+        /@media \(prefers-color-scheme: dark\) \{\s*:where\(:root:not\(\[data-theme="light"\]\)\[data-kk-accent\], /,
       );
     });
 
@@ -114,8 +129,8 @@ describe('tokens.css', () => {
       const css = tokens().replace(/\/\*[\s\S]*?\*\//g, '');
       const lightAt = css.indexOf(':where([data-kk-accent]) {');
       expect(lightAt).toBeGreaterThan(0);
-      expect(css.indexOf(':where(:root:not([data-theme="light"]) [data-kk-accent]) {')).toBeGreaterThan(lightAt);
-      expect(css.indexOf(':where(:root[data-theme="dark"] [data-kk-accent]) {')).toBeGreaterThan(lightAt);
+      expect(css.indexOf(':where(:root:not([data-theme="light"])[data-kk-accent], :root:not([data-theme="light"]) [data-kk-accent]) {')).toBeGreaterThan(lightAt);
+      expect(css.indexOf(':where(:root[data-theme="dark"][data-kk-accent], :root[data-theme="dark"] [data-kk-accent]) {')).toBeGreaterThan(lightAt);
     });
 
     test('names each member as an accent: data-kk-accent="kouro" and the rest', () => {
