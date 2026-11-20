@@ -55,5 +55,9 @@ export declare function buildProjectJson(meta: ProjectMeta, version: string, sou
 }): ProjectJson;
 /** Reads the sources from `root` and writes project.json to `outFile`. */
 export declare function writeProjectJson(meta: ProjectMeta, root: string, outFile: string): ProjectJson;
-/** Vite plugin: emits project.json into the build output; a bad source fails the build. */
+/**
+ * Vite plugin: emits project.json into the build output; a bad source fails the build.
+ * It also defines `__PROJECT_VERSION__` (the package.json version, a string) for the app;
+ * declare it with `declare const __PROJECT_VERSION__: string`.
+ */
 export declare function projectJsonPlugin(meta: ProjectMeta, root?: string): Plugin;

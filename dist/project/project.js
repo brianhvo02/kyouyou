@@ -94,11 +94,13 @@ export function parseFeatures(readme) {
     const sec = sections(splitLines(readme), '## ').find((s) => s.heading.toLowerCase() === 'features');
     return sec ? bullets(sec.lines).map(splitFeature) : [];
 }
+// A path counts only when nothing path- or word-like comes before it, so URLs such as
+// https://example.com/home/docs pass; an `@` counts only with a word character on both sides.
 const PRIVATE = [
-    [/\/(?:Users|home)\/\S/, 'a local path'],
-    [/(?:^|[^A-Za-z])[A-Za-z]:\\/, 'a Windows path'],
-    [/~\//, 'a home-folder path'],
-    [/[^\s@<>]+@[^\s@<>]+/, 'an address or login@machine'],
+    [/(?<![\w./:])\/(?:Users|home)\//, 'a local path'],
+    [/(?<![\w./:])[A-Za-z]:\\/, 'a Windows path'],
+    [/(?<![\w./:])~\//, 'a home-folder path'],
+    [/\w@\w/, 'an address or login@machine'],
 ];
 function checkPrivate(text, where) {
     const plain = text.replace(/<[^<>\s@]+@[^<>\s@]+>/g, '');
@@ -149,7 +151,7 @@ function readSource(root, name) {
         throw new ProjectSourceError(`cannot read ${name} in ${root}`);
     }
 }
-function buildFromFiles(meta, root) {
+function readVersion(root) {
     let version;
     try {
         version = JSON.parse(readSource(root, 'package.json')).version;
@@ -161,7 +163,10 @@ function buildFromFiles(meta, root) {
     }
     if (typeof version !== 'string' || version === '')
         throw new ProjectSourceError('package.json has no version');
-    return buildProjectJson(meta, version, {
+    return version;
+}
+function buildFromFiles(meta, root) {
+    return buildProjectJson(meta, readVersion(root), {
         changelog: readSource(root, 'CHANGELOG.md'),
         roadmap: readSource(root, 'ROADMAP.md'),
         readme: readSource(root, 'README.md'),
@@ -174,11 +179,18 @@ export function writeProjectJson(meta, root, outFile) {
     writeFileSync(outFile, serialize(project));
     return project;
 }
-/** Vite plugin: emits project.json into the build output; a bad source fails the build. */
+/**
+ * Vite plugin: emits project.json into the build output; a bad source fails the build.
+ * It also defines `__PROJECT_VERSION__` (the package.json version, a string) for the app;
+ * declare it with `declare const __PROJECT_VERSION__: string`.
+ */
 export function projectJsonPlugin(meta, root = process.cwd()) {
     let source = '';
     return {
         name: 'kyouyou-project-json',
+        config() {
+            return { define: { __PROJECT_VERSION__: JSON.stringify(readVersion(root)) } };
+        },
         buildStart() {
             try {
                 source = serialize(buildFromFiles(meta, root));

@@ -158,6 +158,25 @@ describe('buildProjectJson', () => {
     expect(() => buildProjectJson(META, '0.2.0', { ...sources, roadmap })).toThrow(ProjectSourceError);
   });
 
+  it.each(['/home/x', ' /Users/x', '(~/x', 'me@host', 'a@b.c'])('throws for private detail %s (narrowed rules)', (bad) => {
+    const changelog = CHANGELOG.replace('- Another one.', `- Saw ${bad} here.`);
+    expect(() => buildProjectJson(META, '0.2.0', { ...sources, changelog })).toThrow(ProjectSourceError);
+    const start = CHANGELOG.replace('- Another one.', bad);
+    expect(() => buildProjectJson(META, '0.2.0', { ...sources, changelog: start })).toThrow(ProjectSourceError);
+  });
+
+  it.each([
+    'Updated `@types/node` and `@vitejs/plugin-react`',
+    '@types/node',
+    'See https://example.com/home/docs now',
+    'See https://host/~user/ now',
+    'Contact <owner@example.com> now',
+    'See https://example.com/Users/guide',
+  ])('allows %s', (ok) => {
+    const changelog = CHANGELOG.replace('- Another one.', `- ${ok}.`);
+    expect(() => buildProjectJson(META, '0.2.0', { ...sources, changelog })).not.toThrow();
+  });
+
   it('allows an address only inside angle brackets', () => {
     const changelog = CHANGELOG.replace('- Another one.', '- Contact <owner@example.com> now.');
     expect(() => buildProjectJson(META, '0.2.0', { ...sources, changelog })).not.toThrow();
@@ -222,6 +241,12 @@ describe('project.json writer and plugin', () => {
     expect(arg.fileName).toBe('project.json');
     expect(JSON.parse(arg.source).version).toBe('0.2.0');
     expect(arg.source.endsWith('\n')).toBe(true);
+  });
+
+  it('plugin config defines __PROJECT_VERSION__ from package.json', () => {
+    const root = makeRoot('0.2.0');
+    const plugin = projectJsonPlugin(META, root) as { config?: () => unknown };
+    expect(plugin.config?.()).toEqual({ define: { __PROJECT_VERSION__: '"0.2.0"' } });
   });
 
   it('plugin buildStart fails the build on a version missing from the changelog', () => {

@@ -10,7 +10,7 @@ All notable changes to kyouyou (共有) are recorded here, newest first. The for
 
 ### Added
 
-- `project`: builds an app's `project.json` (version, changes, roadmap, features) from its `CHANGELOG.md`, `ROADMAP.md` and README `## Features`, with `buildProjectJson`, the three parsers and a Vite plugin.
+- `project`: builds an app's `project.json` (version, changes, roadmap, features) from its `CHANGELOG.md`, `ROADMAP.md` and README `## Features`, with `buildProjectJson`, the three parsers and a Vite plugin that also defines `__PROJECT_VERSION__` (the package.json version) for the app.
 
 ## [0.13.1] - 2026-11-19
 
