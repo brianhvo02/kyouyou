@@ -9,6 +9,7 @@ All notable changes to kyouyou (共有) are recorded here, newest first. The for
 ### Added
 
 - `style/tokens.css`, `style/fonts.css`, `style/base.css`: the family style kit: `--kk-` tokens (palette, five accents, type, spacing, radii, focus ring, bar height) in light and dark, self-hosted B612, B612 Mono and a Noto Serif JP subset of the family's kanji, and opt-in base rules.
+- `family-bar`: `<kk-family-bar>`, the family's row of taxiway signs (the location sign for the current surface, direction signs to the others), with public and home link modes, unavailable members, and a compact or phone-width menu; registered by `defineFamilyBar()`.
 
 ## [0.15.0] - 2026-11-20
 

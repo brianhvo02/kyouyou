@@ -117,6 +117,10 @@
       "types": "./dist/project/project.d.ts",
       "default": "./dist/project/project.js"
     },
+    "./family-bar": {
+      "types": "./dist/family-bar/family-bar.d.ts",
+      "default": "./dist/family-bar/family-bar.js"
+    },
     "./style/tokens.css": "./dist/style/tokens.css",
     "./style/fonts.css": "./dist/style/fonts.css",
     "./style/base.css": "./dist/style/base.css",
@@ -146,6 +150,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
+    "jsdom": "31.0.0",
     "subset-font": "2.9.0",
     "typescript": "~6.0.2",
     "vite": "8.3.8",

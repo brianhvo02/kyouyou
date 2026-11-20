@@ -17,6 +17,7 @@ so it works from a plain Node script, under vitest and in a Vite build alike.
 - **A Kuukou server stand-in.** `kuukou/fake-server` and `gfs/fake-gfs` let an app test against made-up servers.
 - **Reads X-Plane live.** `xplane/read` subscribes to datarefs over the web API and reconnects by itself.
 - **The family style kit.** `style/tokens.css`, `style/fonts.css` and `style/base.css` give every Kyoten Kuukou surface the same airside-sign palette, B612 type and Mincho names, light and dark, with the fonts self-hosted.
+- **The family bar.** `family-bar` is a row of airfield taxiway signs along the top of every surface: where you are, and the way to the other apps.
 - **Builds `project.json`.** `project` turns a changelog, roadmap and features list into the file the hub dashboard reads.
 
 ## What is in it
@@ -54,6 +55,7 @@ so it works from a plain Node script, under vitest and in a Vite build alike.
 | `kyouyou/style/fonts.css` | `@font-face` rules for `KK B612` and `KK B612 Mono` (400, 700) and `KK Mincho` (Noto Serif JP cut to the family's kanji), loaded by relative URL from `style/fonts/` so the app's bundler copies them; OFL texts beside the files |
 | `kyouyou/style/base.css` | Opt-in base rules at zero specificity: body type, headings, Japanese names (`.kk-jp`, with `lang="ja"` on the element), figures, links, buttons (`.kk-button`, `.kk-button-primary`), inputs, the focus ring, reduced motion |
 | `kyouyou/style/fonts/*` | The font files and their licences |
+| `kyouyou/family-bar` | `<kk-family-bar current mode unavailable compact>`, a framework-free custom element registered by `defineFamilyBar()` (once; calling it again does nothing; does nothing outside a browser). The current member (`kuukou`, `kouro`, `kokuzu`, `kansei`, `kakunouko`) is the location sign, not a link, with `aria-current="page"`; the others are direction signs. `mode="public"` (default) links each public address and hides Kakunouko unless it is current; `mode="home"` links `../<app>/`, Kakunouko `../` and Kuukou the public dashboard. `unavailable="kansei kokuzu"` hides members (never the current one). `compact`, and every bar under 600 px of viewport, shows only the location sign, a button that opens the others (Enter, click or tap; Escape or a tap outside closes and focus returns). Its CSS is inside the module, applied in its shadow root (a constructed stylesheet, or a `<style>` where there is none), so it needs no loader and loads nothing from any origin; it takes the `--kk-` tokens through the shadow boundary, so it follows the root `data-theme` and the OS setting. `FAMILY` lists the members, names, kanji and links |
 
 No app data lives here: no Jeppesen, Navigraph or X-Plane files, and nothing converted from one.
 
@@ -77,6 +79,23 @@ URLs are relative, so a bundler that cannot load them fails the build rather tha
 Set `--kk-accent` on `:root` (where `--kk-accent-text` is worked out). An app that fills a control
 with its accent also sets `--kk-on-accent: var(--kk-on-kouro)`. Sign yellow is for signs and the
 focus ring, never for text on the ground; use `--kk-accent-text` for text.
+
+### The family bar
+
+```ts
+import {defineFamilyBar} from 'kyouyou/family-bar';
+defineFamilyBar();
+```
+
+```html
+<kk-family-bar current="kouro" mode="public"></kk-family-bar>
+```
+
+Load the style kit's `fonts.css` and `tokens.css` on the page too: faces cannot be declared inside a
+shadow root, and the tokens give the strip its themed ground and rule (without them it falls back to
+the light values). In home mode, pass the members `/api/server` reports unavailable; the bar never
+probes. React renders it as a plain custom element (declare `kk-family-bar` in the app's JSX
+intrinsic elements); set `compact` where an app's own toolbar hosts it.
 
 ## Working on it
 
