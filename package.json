@@ -1,6 +1,6 @@
 {
   "name": "kyouyou",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Code shared by the Kōkūzu, Kōro and Kansei flight-simulation apps",
   "license": "UNLICENSED",
   "private": true,
@@ -104,6 +104,10 @@
     "./faa/cifp": {
       "types": "./dist/faa/cifp.d.ts",
       "default": "./dist/faa/cifp.js"
+    },
+    "./faa/airspace": {
+      "types": "./dist/faa/airspace.d.ts",
+      "default": "./dist/faa/airspace.js"
     }
   },
   "files": [
