@@ -116,13 +116,17 @@
     "./project": {
       "types": "./dist/project/project.d.ts",
       "default": "./dist/project/project.js"
-    }
+    },
+    "./style/tokens.css": "./dist/style/tokens.css",
+    "./style/fonts.css": "./dist/style/fonts.css",
+    "./style/base.css": "./dist/style/base.css",
+    "./style/fonts/*": "./dist/style/fonts/*"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node scripts/copy-style.mjs",
     "check": "npm run typecheck && npm test && npm run build && git diff --exit-code -- dist && npm run project && git diff --exit-code -- project.json",
     "project": "node scripts/project.mjs",
     "test": "vitest run",
@@ -142,6 +146,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
+    "subset-font": "2.9.0",
     "typescript": "~6.0.2",
     "vite": "8.3.8",
     "vitest": "5.0.3"

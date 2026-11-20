@@ -1,0 +1,109 @@
+/* Kyoten Kuukou (拠点空港) family tokens: airside signs on chart paper.
+   Every name starts with --kk- so it never meets an app's own variables.
+
+   An app picks its accent with one line on :root:
+     :root { --kk-accent: var(--kk-kouro); }
+   --kk-accent-text follows by itself: the accent's own hue and chroma at a lightness that reads as
+   text on the ground and on surfaces (at most 0.5 in light, at least 0.75 in dark, in OKLCH).
+   Browsers without relative colours drop it, and such text takes the ink colour instead. An app that fills a control with its accent also sets
+   --kk-on-accent: var(--kk-on-kouro) for the text on that fill.
+
+   Themes: light by default; dark under prefers-color-scheme, unless the root says
+   data-theme="light"; and dark whenever the root says data-theme="dark". The kit reads no storage.
+
+   Sign yellow is a fill (signs, focus ring), never text on the ground. */
+
+:root {
+  /* The palette. These are the physical colours of the family and do not change with the theme. */
+  --kk-chart-paper: #eef1ec;
+  --kk-chart-ink: #18232e;
+  --kk-chart-rule: #c9d0c8;
+  --kk-sign-yellow: #f2c500;
+  --kk-sign-black: #000;
+
+  /* What a surface is painted with (themed). */
+  --kk-ground: var(--kk-chart-paper);
+  --kk-surface: #f8faf7;
+  --kk-ink: var(--kk-chart-ink);
+  --kk-ink-muted: #4a5762;
+  --kk-rule: var(--kk-chart-rule);
+  --kk-rule-strong: #77847e;
+
+  /* Accents, from cockpit display conventions, with the text colour that sits on each as a fill. */
+  --kk-kuukou: var(--kk-sign-yellow);
+  --kk-on-kuukou: var(--kk-sign-black);
+  --kk-kouro: #c2189b;
+  --kk-on-kouro: #fff;
+  --kk-kokuzu: #0a7ea4;
+  --kk-on-kokuzu: #fff;
+  --kk-kansei: #1e8a4c;
+  --kk-on-kansei: #000;
+  --kk-kakunouko: #c77700;
+  --kk-on-kakunouko: #000;
+
+  --kk-accent: var(--kk-kuukou);
+  --kk-on-accent: var(--kk-on-kuukou);
+  --kk-accent-text: oklch(from var(--kk-accent) min(l, 0.5) c h);
+
+  /* Type. B612 was drawn for cockpit screens; its macrons sit off ō and ū, so Latin Extended-A
+     comes from a system face first. Japanese names: system Mincho, then the self-hosted subset. */
+  --kk-font-text: 'KK Macrons', 'KK B612', system-ui, sans-serif;
+  --kk-font-figures: 'KK B612 Mono', ui-monospace, monospace;
+  --kk-font-jp: 'Hiragino Mincho ProN', 'Hiragino Mincho Pro', 'Yu Mincho', 'YuMincho', 'Noto Serif CJK JP', 'Noto Serif JP', 'KK Mincho', serif;
+
+  /* A 1.2 scale on a 15 px body (B612 sets large; 15 px reads like 16 px of most faces). */
+  --kk-step--2: 0.6875rem; /* 11 px: fine print under figures */
+  --kk-step--1: 0.8125rem; /* 13 px: secondary text, kanji beside a name */
+  --kk-step-0: 0.9375rem; /* 15 px: body */
+  --kk-step-1: 1.125rem; /* 18 px: panel titles */
+  --kk-step-2: 1.375rem; /* 22 px: section titles */
+  --kk-step-3: 1.625rem; /* 26 px: page titles on phones */
+  --kk-step-4: 1.9375rem; /* 31 px: page titles */
+  --kk-leading: 1.5;
+  --kk-leading-tight: 1.2;
+
+  /* Spacing on a 4 px grid. */
+  --kk-space-1: 0.25rem;
+  --kk-space-2: 0.5rem;
+  --kk-space-3: 0.75rem;
+  --kk-space-4: 1rem;
+  --kk-space-5: 1.5rem;
+  --kk-space-6: 2rem;
+  --kk-space-7: 3rem;
+
+  /* Radii rise with size: a sign is nearly square, a panel only softened. */
+  --kk-radius-sign: 2px;
+  --kk-radius-control: 3px;
+  --kk-radius-panel: 4px;
+
+  /* Focus: a black edge inside a sign-yellow ring, visible on paper and on navy alike. */
+  --kk-focus-inner: var(--kk-sign-black);
+  --kk-focus-outer: var(--kk-sign-yellow);
+  --kk-focus-width: 2px;
+  --kk-focus-ring: 0 0 0 var(--kk-focus-width) var(--kk-focus-inner), 0 0 0 calc(2 * var(--kk-focus-width)) var(--kk-focus-outer);
+
+  /* The family bar along the top. */
+  --kk-bar-height: 1.875rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --kk-ground: #0f1922;
+    --kk-surface: var(--kk-chart-ink);
+    --kk-ink: #e3e8e1;
+    --kk-ink-muted: #9eabb4;
+    --kk-rule: #2c3b48;
+    --kk-rule-strong: #6c7e8c;
+    --kk-accent-text: oklch(from var(--kk-accent) max(l, 0.75) c h);
+  }
+}
+
+:root[data-theme="dark"] {
+  --kk-ground: #0f1922;
+  --kk-surface: var(--kk-chart-ink);
+  --kk-ink: #e3e8e1;
+  --kk-ink-muted: #9eabb4;
+  --kk-rule: #2c3b48;
+  --kk-rule-strong: #6c7e8c;
+  --kk-accent-text: oklch(from var(--kk-accent) max(l, 0.75) c h);
+}

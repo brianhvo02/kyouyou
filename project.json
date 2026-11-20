@@ -139,7 +139,9 @@
     }
   ],
   "unreleased": {
-    "added": [],
+    "added": [
+      "`style/tokens.css`, `style/fonts.css`, `style/base.css`: the family style kit: `--kk-` tokens (palette, five accents, type, spacing, radii, focus ring, bar height) in light and dark, self-hosted B612, B612 Mono and a Noto Serif JP subset of the family's kanji, and opt-in base rules."
+    ],
     "changed": [],
     "fixed": [],
     "removed": []
@@ -188,6 +190,10 @@
     {
       "summary": "Reads X-Plane live.",
       "detail": "`xplane/read` subscribes to datarefs over the web API and reconnects by itself."
+    },
+    {
+      "summary": "The family style kit.",
+      "detail": "`style/tokens.css`, `style/fonts.css` and `style/base.css` give every Kyoten Kuukou surface the same airside-sign palette, B612 type and Mincho names, light and dark, with the fonts self-hosted."
     },
     {
       "summary": "Builds `project.json`.",

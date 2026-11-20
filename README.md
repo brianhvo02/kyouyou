@@ -16,6 +16,7 @@ so it works from a plain Node script, under vitest and in a Vite build alike.
 - **Weather and winds aloft.** `gfs/*` decodes NOAA GFS winds, `atmosphere` converts altitude and speed, and `wx/upstream` relays airport weather.
 - **A Kuukou server stand-in.** `kuukou/fake-server` and `gfs/fake-gfs` let an app test against made-up servers.
 - **Reads X-Plane live.** `xplane/read` subscribes to datarefs over the web API and reconnects by itself.
+- **The family style kit.** `style/tokens.css`, `style/fonts.css` and `style/base.css` give every Kyoten Kuukou surface the same airside-sign palette, B612 type and Mincho names, light and dark, with the fonts self-hosted.
 - **Builds `project.json`.** `project` turns a changelog, roadmap and features list into the file the hub dashboard reads.
 
 ## What is in it
@@ -50,14 +51,40 @@ so it works from a plain Node script, under vitest and in a Vite build alike.
 | `kyouyou/faa/airspace` | Restrictive airspace in ARINC 424-18 (`UR` records, as in the FAA's `FAACIFP18`): `parseRestrictiveAirspace` reads restricted, prohibited and other special-use areas, with arcs and circles turned into points no more than 1 NM apart, into the same shape as `kyouyou/xplane/airspace` (so `airspacesAt` works on both), plus designation, region, multiple code, time code, NOTAM flag and the limits as written |
 | `kyouyou/project` | The hub dashboard's `project.json` (schema 1): `buildProjectJson` turns an app's `CHANGELOG.md`, `ROADMAP.md` and README `## Features` list into one object (version, release date, every changelog entry, unreleased changes, roadmap, features), and refuses text that holds a local path (`/Users/`, `/home/`, `~/`, `C:\`, not inside a URL) or a `login@machine`; `projectJsonPlugin` also defines `__PROJECT_VERSION__` (the package.json version) for the app, declared with `declare const __PROJECT_VERSION__: string`; `parseChangelog`, `parseRoadmap` and `parseFeatures` read the sources alone. No dependencies |
 
+| `kyouyou/style/tokens.css` | The family's design tokens as `--kk-` custom properties: chart paper, chart ink, rules, sign yellow and black; the five accents (`--kk-kuukou`, `--kk-kouro`, `--kk-kokuzu`, `--kk-kansei`, `--kk-kakunouko`) with `--kk-on-<app>` for text on each; `--kk-accent`, `--kk-accent-text` (contrast-safe text in the accent's hue) and `--kk-on-accent`; `--kk-font-text`, `--kk-font-figures`, `--kk-font-jp`; the type scale `--kk-step--2` to `--kk-step-4`; spacing, radii, focus ring and `--kk-bar-height`. Dark under `prefers-color-scheme` unless the root has `data-theme="light"`, and whenever it has `data-theme="dark"`; reads no storage |
+| `kyouyou/style/fonts.css` | `@font-face` rules for `KK B612` and `KK B612 Mono` (400, 700) and `KK Mincho` (Noto Serif JP cut to the family's kanji), loaded by relative URL from `style/fonts/` so the app's bundler copies them; OFL texts beside the files |
+| `kyouyou/style/base.css` | Opt-in base rules at zero specificity: body type, headings, Japanese names (`lang="ja"`), figures, links, buttons (`.kk-button`, `.kk-button-primary`), inputs, the focus ring, reduced motion |
+| `kyouyou/style/fonts/*` | The font files and their licences |
+
 No app data lives here: no Jeppesen, Navigraph or X-Plane files, and nothing converted from one.
 
 ## Using it
 
 Pin it as a git dependency at a tag or commit, and import by the paths above.
 
+### The style kit
+
+Import the CSS from a bundled entry (Vite, or esbuild with a `file` loader for `.woff2`); the font
+URLs are relative, so a bundler that cannot load them fails the build rather than falling back:
+
+```css
+@import 'kyouyou/style/fonts.css';
+@import 'kyouyou/style/tokens.css';
+@import 'kyouyou/style/base.css'; /* optional */
+
+:root { --kk-accent: var(--kk-kouro); }
+```
+
+Set `--kk-accent` on `:root` (where `--kk-accent-text` is worked out). An app that fills a control
+with its accent also sets `--kk-on-accent: var(--kk-on-kouro)`. Sign yellow is for signs and the
+focus ring, never for text on the ground; use `--kk-accent-text` for text.
+
 ## Working on it
 
 Edit `src/`, then `npm run check`: it type-checks, runs the tests, rebuilds `dist/` and fails if the
 committed `dist/` was stale. Commit `src/` and `dist/` together. A change here reaches an app only
 when that app moves its pin.
+
+The build also copies `src/style/` (CSS, fonts, licences) to `dist/style/`. The Mincho subset is made
+by `node scripts/subset-jp.mjs <NotoSerifJP[wght].ttf>` (the variable font from Google's font
+repository) whenever the family's names change; commit the font it writes.
