@@ -394,14 +394,14 @@ function readBase128(buf: Buffer, at: number): [number, number] {
   throw new Error('bad UIntBase128');
 }
 
-/** The `cmap` table of a WOFF2 file (index 0 of the known tags; WOFF2 never transforms it). */
-function woff2Cmap(file: Buffer): Buffer {
+/** A table of a WOFF2 file by its known-tag index (cmap 0, name 5; WOFF2 never transforms either). */
+function woff2Table(file: Buffer, wanted: number): Buffer {
   if (file.toString('latin1', 0, 4) !== 'wOF2') throw new Error('not WOFF2');
   const numTables = file.readUInt16BE(12);
   const compressedSize = file.readUInt32BE(20);
   let at = 48;
   let offset = 0;
-  let cmap: [number, number] | undefined;
+  let found: [number, number] | undefined;
   for (let i = 0; i < numTables; i++) {
     const flags = file[at++]!;
     const tagIndex = flags & 0x3f;
@@ -411,12 +411,29 @@ function woff2Cmap(file: Buffer): Buffer {
     const version = flags >> 6;
     const transformed = tagIndex === 10 || tagIndex === 11 ? version !== 3 : version !== 0;
     if (transformed) [length, at] = readBase128(file, at);
-    if (tagIndex === 0) cmap = [offset, length];
+    if (tagIndex === wanted) found = [offset, length];
     offset += length;
   }
-  if (!cmap) throw new Error('no cmap');
+  if (!found) throw new Error(`no table ${wanted}`);
   const tables = brotliDecompressSync(file.subarray(at, at + compressedSize));
-  return tables.subarray(cmap[0], cmap[0] + cmap[1]);
+  return tables.subarray(found[0], found[0] + found[1]);
+}
+
+const woff2Cmap = (file: Buffer): Buffer => woff2Table(file, 0);
+
+/** The Windows (UTF-16) strings of a name table with the given name ID. */
+function names(table: Buffer, nameId: number): string[] {
+  const count = table.readUInt16BE(2);
+  const strings = table.readUInt16BE(4);
+  const out: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const r = 6 + i * 12;
+    if (table.readUInt16BE(r) !== 3 || table.readUInt16BE(r + 6) !== nameId) continue;
+    const len = table.readUInt16BE(r + 8);
+    const start = strings + table.readUInt16BE(r + 10);
+    out.push(Buffer.from(table.subarray(start, start + len)).swap16().toString('utf16le'));
+  }
+  return out;
 }
 
 /** Code points mapped to a real glyph by the Unicode subtable of a cmap (format 4 or 12). */
@@ -467,6 +484,14 @@ describe('the Mincho subset', () => {
     expect(codePoints(woff2Cmap(font)).map((c) => String.fromCodePoint(c)).join('')).toBe(
       want.map((c) => String.fromCodePoint(c)).join(''),
     );
+  });
+
+  test("its licence text carries the font's own copyright notice (OFL section 2)", () => {
+    const font = readFileSync(join(here, 'fonts', 'kk-mincho-subset.woff2'));
+    const notices = names(woff2Table(font, 5), 0);
+    expect(notices.length).toBeGreaterThan(0);
+    const licence = read(join('fonts', 'NotoSerifJP-OFL.txt'));
+    for (const n of notices) expect(licence).toContain(n.replace(/^\(c\)/i, 'Copyright'));
   });
 
   test('is small', () => {
