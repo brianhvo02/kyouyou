@@ -6,6 +6,13 @@ All notable changes to kyouyou (共有) are recorded here, newest first. The for
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-11-20
+
+### Added
+
+- `xplane/aptdat`: `readAptDat` streams X-Plane's global airport file and yields each airport's name, elevation, metadata, land runways and frequencies.
+- `kuukou/fake-server` serves the `xplane-airports` folder (`apt.dat` only) and reports it in the server check.
+
 ## [0.14.0] - 2026-11-19
 
 ### Added

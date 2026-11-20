@@ -1,6 +1,6 @@
 {
   "name": "kyouyou",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Code shared by the Kōkūzu, Kōro and Kansei flight-simulation apps",
   "license": "UNLICENSED",
   "private": true,
@@ -72,6 +72,10 @@
     "./xplane/airspace": {
       "types": "./dist/xplane/airspace.d.ts",
       "default": "./dist/xplane/airspace.js"
+    },
+    "./xplane/aptdat": {
+      "types": "./dist/xplane/aptdat.d.ts",
+      "default": "./dist/xplane/aptdat.js"
     },
     "./xplane/atc": {
       "types": "./dist/xplane/atc.d.ts",

@@ -25,6 +25,9 @@ const JEPPESEN_FILES = new Set([
 function allowed(kind, path) {
     if (kind === 'xplane')
         return XPLANE_ALLOWED.test(path);
+    // The xplane-airports folder serves X-Plane's global apt.dat and nothing else.
+    if (kind === 'xplane-airports')
+        return path === 'apt.dat';
     const parts = path.toLowerCase().split('/');
     const name = parts.pop();
     if (!parts.every((d) => JEPPESEN_DIRS.has(d)))
@@ -41,11 +44,15 @@ export function fakeKuukouHandler(folders) {
         if (url.pathname === '/kuukou/api/server') {
             return json({
                 server: 'kuukou', version: 'fake',
-                folders: { xplane: { ok: folders.xplane !== undefined, cycle: null }, jeppesen: { ok: folders.jeppesen !== undefined } },
+                folders: {
+                    xplane: { ok: folders.xplane !== undefined, cycle: null },
+                    jeppesen: { ok: folders.jeppesen !== undefined },
+                    'xplane-airports': { ok: folders['xplane-airports'] !== undefined },
+                },
                 sim: { reachable: false, writer: null },
             });
         }
-        const m = /^\/kuukou\/api\/files\/(xplane|jeppesen)\/(.*)$/.exec(url.pathname);
+        const m = /^\/kuukou\/api\/files\/(xplane-airports|xplane|jeppesen)\/(.*)$/.exec(url.pathname);
         const folder = m ? folders[m[1]] : undefined;
         if (!m || folder === undefined)
             return new Response('not found', { status: 404 });

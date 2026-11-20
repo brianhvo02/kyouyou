@@ -4,9 +4,20 @@
   "name": "kyouyou (共有)",
   "summary": "Code shared by the Kuukou flight-simulation apps",
   "url": "https://github.com/brianhvo02/kyouyou",
-  "version": "0.14.0",
-  "released": "2026-11-19",
+  "version": "0.15.0",
+  "released": "2026-11-20",
   "changelog": [
+    {
+      "version": "0.15.0",
+      "date": "2026-11-20",
+      "added": [
+        "`xplane/aptdat`: `readAptDat` streams X-Plane's global airport file and yields each airport's name, elevation, metadata, land runways and frequencies.",
+        "`kuukou/fake-server` serves the `xplane-airports` folder (`apt.dat` only) and reports it in the server check."
+      ],
+      "changed": [],
+      "fixed": [],
+      "removed": []
+    },
     {
       "version": "0.14.0",
       "date": "2026-11-19",

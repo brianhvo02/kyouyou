@@ -67,6 +67,25 @@ describe('fakeKuukouHandler, as the real server behaves', () => {
   });
 });
 
+describe('fakeKuukouHandler, the xplane-airports folder', () => {
+  test('serves apt.dat only, lists it, and reports the folder in the server check', async () => {
+    const h = fakeKuukouHandler({'xplane-airports': {'apt.dat': 'I\n1200 x\n99\n', 'other.txt': 'no'}});
+    const info = await (await h(new Request('http://x/kuukou/api/server'))).json();
+    expect(info.folders['xplane-airports']).toEqual({ok: true});
+    expect(info.folders.xplane.ok).toBe(false);
+    expect(await (await h(new Request('http://x/kuukou/api/files/xplane-airports/apt.dat'))).text()).toBe('I\n1200 x\n99\n');
+    expect((await h(new Request('http://x/kuukou/api/files/xplane-airports/other.txt'))).status).toBe(404);
+    expect(await (await h(new Request('http://x/kuukou/api/files/xplane-airports/?manifest'))).json()).toEqual([{path: 'apt.dat', size: 12}]);
+    const ranged = await h(new Request('http://x/kuukou/api/files/xplane-airports/apt.dat', {headers: {range: 'bytes=0-1'}}));
+    expect(ranged.status).toBe(200);
+  });
+
+  test('reports the folder as not ok when it is absent', async () => {
+    const info = await (await fakeKuukouHandler({})(new Request('http://x/kuukou/api/server'))).json();
+    expect(info.folders['xplane-airports']).toEqual({ok: false});
+  });
+});
+
 describe('startFakeKuukou', () => {
   let server: FakeKuukou | undefined;
   afterEach(async () => { await server?.close(); });
