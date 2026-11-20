@@ -5,9 +5,13 @@
      :root { --kk-accent: var(--kk-kouro); }
    --kk-accent-text follows by itself: the accent's own hue and chroma at a lightness that reads as
    text on the ground and on surfaces (at most 0.5 in light, at least 0.75 in dark, in OKLCH).
-   Browsers without relative colours drop it, and such text takes the ink colour instead. An app that fills a control with its accent also sets
-   --kk-on-accent: var(--kk-on-kouro) for the text on that fill. A part of a page in another member's
-   accent says so with data-kk-accent="kokuzu" (see the end of this file).
+   In a browser without relative colours the value is invalid when it is used, so the property
+   falls back as if unset: color inherits (the ink, as a rule), border-color becomes currentColor
+   and background transparent.
+
+   An app that fills a control with its accent also sets --kk-on-accent: var(--kk-on-kouro) for
+   the text on that fill. A part of a page in another member's accent says so with
+   data-kk-accent="kokuzu" (see the end of this file).
 
    Themes: light by default; dark under prefers-color-scheme, unless the root says
    data-theme="light"; and dark whenever the root says data-theme="dark". The kit reads no storage.
@@ -77,11 +81,17 @@
   --kk-radius-control: 3px;
   --kk-radius-panel: 4px;
 
-  /* Focus: a black edge inside a sign-yellow ring, visible on paper and on navy alike. */
+  /* Focus: a black edge inside a sign-yellow ring, visible on paper and on navy alike. The ring is
+     an outline (kept in forced-colours mode) standing off the control, with a black shadow filling
+     the gap; base.css draws it from these three, and so can an app's own controls:
+       outline: var(--kk-focus-outline); outline-offset: var(--kk-focus-offset);
+       box-shadow: var(--kk-focus-shadow); */
   --kk-focus-inner: var(--kk-sign-black);
   --kk-focus-outer: var(--kk-sign-yellow);
   --kk-focus-width: 2px;
-  --kk-focus-ring: 0 0 0 var(--kk-focus-width) var(--kk-focus-inner), 0 0 0 calc(2 * var(--kk-focus-width)) var(--kk-focus-outer);
+  --kk-focus-outline: var(--kk-focus-width) solid var(--kk-focus-outer);
+  --kk-focus-offset: var(--kk-focus-width);
+  --kk-focus-shadow: 0 0 0 var(--kk-focus-width) var(--kk-focus-inner);
 
   /* The family bar along the top. */
   --kk-bar-height: 1.875rem;

@@ -26,7 +26,8 @@ const PROMISED = [
   '--kk-leading', '--kk-leading-tight',
   '--kk-space-1', '--kk-space-2', '--kk-space-3', '--kk-space-4', '--kk-space-5', '--kk-space-6', '--kk-space-7',
   '--kk-radius-sign', '--kk-radius-control', '--kk-radius-panel',
-  '--kk-focus-inner', '--kk-focus-outer', '--kk-focus-width', '--kk-focus-ring',
+  '--kk-focus-inner', '--kk-focus-outer', '--kk-focus-width',
+  '--kk-focus-outline', '--kk-focus-offset', '--kk-focus-shadow',
   '--kk-bar-height',
 ];
 
@@ -268,6 +269,20 @@ describe('base.css', () => {
     const mincho = rules().filter((r) => r.body.includes('--kk-font-jp'));
     expect(mincho.map((r) => r.selector)).toEqual([':where(.kk-jp)']);
     expect(read('base.css')).not.toMatch(/:lang\(|\[lang/);
+  });
+
+  test('draws the focus ring from the focus tokens, the one definition of it', () => {
+    const t = light();
+    expect(t.has('--kk-focus-ring')).toBe(false);
+    expect(t.get('--kk-focus-outline')).toBe('var(--kk-focus-width) solid var(--kk-focus-outer)');
+    expect(t.get('--kk-focus-offset')).toBe('var(--kk-focus-width)');
+    expect(t.get('--kk-focus-shadow')).toBe('0 0 0 var(--kk-focus-width) var(--kk-focus-inner)');
+    const focus = rules().find((r) => r.selector === ':where(:focus-visible)')!.body;
+    expect(focus).toMatch(/outline:\s*var\(--kk-focus-outline\);/);
+    expect(focus).toMatch(/outline-offset:\s*var\(--kk-focus-offset\);/);
+    expect(focus).toMatch(/box-shadow:\s*var\(--kk-focus-shadow\);/);
+    const primary = rules().find((r) => r.selector.includes('.kk-button-primary:focus-visible'))!.body;
+    expect(primary).toMatch(/box-shadow:\s*var\(--kk-focus-shadow\), inset/);
   });
 
   test('colours placeholders in muted ink (held at 4.5:1 by the contrast test), in either theme', () => {

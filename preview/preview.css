@@ -74,9 +74,9 @@
   color: var(--kk-ground);
 }
 .theme-switch label:has(input:focus-visible) {
-  outline: var(--kk-focus-width) solid var(--kk-focus-outer);
-  outline-offset: var(--kk-focus-width);
-  box-shadow: 0 0 0 var(--kk-focus-width) var(--kk-focus-inner);
+  outline: var(--kk-focus-outline);
+  outline-offset: var(--kk-focus-offset);
+  box-shadow: var(--kk-focus-shadow);
   z-index: 1;
 }
 
@@ -248,9 +248,9 @@ main h3 { margin-top: var(--kk-space-5); }
 }
 /* The kit's focus ring, drawn statically so it shows in a screenshot. */
 .is-focus {
-  outline: var(--kk-focus-width) solid var(--kk-focus-outer);
-  outline-offset: var(--kk-focus-width);
-  box-shadow: 0 0 0 var(--kk-focus-width) var(--kk-focus-inner);
+  outline: var(--kk-focus-outline);
+  outline-offset: var(--kk-focus-offset);
+  box-shadow: var(--kk-focus-shadow);
 }
 
 /* Figures in readouts: the same string in both faces, large enough to see the spacing. */
