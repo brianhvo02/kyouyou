@@ -209,6 +209,22 @@ describe('contrast (WCAG 2)', () => {
   });
 });
 
+// ---- base.css ---------------------------------------------------------------------------------
+
+describe('base.css', () => {
+  const rules = (): {selector: string; body: string}[] =>
+    [...read('base.css').replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
+      selector: m[1]!.trim(),
+      body: m[2]!,
+    }));
+
+  test('sets Mincho only on names marked .kk-jp, so a lang="ja" page keeps B612 body text', () => {
+    const mincho = rules().filter((r) => r.body.includes('--kk-font-jp'));
+    expect(mincho.map((r) => r.selector)).toEqual([':where(.kk-jp)']);
+    expect(read('base.css')).not.toMatch(/:lang\(|\[lang/);
+  });
+});
+
 // ---- other origins ---------------------------------------------------------------------------
 
 function filesUnder(dir: string): string[] {

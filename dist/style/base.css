@@ -63,8 +63,10 @@
   font-size: var(--kk-step--1);
 }
 
-/* Japanese names: Mincho, a touch heavier and wider set, so they sit beside bold B612. */
-:where(:lang(ja)) {
+/* Japanese names: Mincho, a touch heavier and wider set, so they sit beside bold B612.
+   Opt-in by class (mark the name lang="ja" too, for screen readers): a lang="ja" page keeps its
+   body text in the family's text face. */
+:where(.kk-jp) {
   font-family: var(--kk-font-jp);
   font-weight: 600;
   letter-spacing: 0.04em;
