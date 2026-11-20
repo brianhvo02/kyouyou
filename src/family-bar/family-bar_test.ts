@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
-import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
-import {FAMILY, defineFamilyBar, placeMenu} from './family-bar.ts';
+import {afterEach, beforeEach, describe, expect, expectTypeOf, test, vi} from 'vitest';
+import * as publicApi from './family-bar.ts';
+import {FAMILY, defineFamilyBar, type FamilyBarElement} from './family-bar.ts';
 import {FAMILY_BAR_CSS} from './family-bar-css.ts';
+import {placeMenu} from './place-menu.ts';
 
 /** A stand-in for window.matchMedia whose answer the test sets and changes. */
 function fakeWidth(narrow: boolean): {set(narrow: boolean): void} {
@@ -207,6 +209,26 @@ describe('the collapsed bar (compact, or narrow)', () => {
     expect(root(el).activeElement).toBe(button);
   });
 
+  test('Escape closes a menu opened by mouse, where the button never took focus (Safari)', () => {
+    const el = bar({current: 'kouro', compact: ''});
+    const button = toggle(el)!;
+    button.click();
+    expect(root(el).activeElement).toBeNull();
+    expect(key(document.body, 'Escape')).toBe(false);
+    expect(menu(el).hidden).toBe(true);
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(root(el).activeElement).toBe(button);
+  });
+
+  test('Escape on the page does nothing while the menu is shut, and the listener goes with it', () => {
+    const el = bar({current: 'kouro', compact: ''});
+    expect(key(document.body, 'Escape')).toBe(true);
+    toggle(el)!.click();
+    toggle(el)!.click();
+    expect(key(document.body, 'Escape')).toBe(true);
+    expect(menu(el).hidden).toBe(true);
+  });
+
   test('a tap or click outside closes the menu', () => {
     const el = bar({current: 'kouro', compact: ''});
     toggle(el)!.click();
@@ -297,6 +319,14 @@ describe('the stylesheet', () => {
     expect(FAMILY_BAR_CSS).toMatch(/\.strip\.folded \{ overflow: visible; \}/);
   });
 
+  test("the signs ignore the host page's text styles", () => {
+    const sign = /\n\.sign \{([^}]*)\}/.exec(FAMILY_BAR_CSS)![1]!;
+    expect(sign).toMatch(/text-transform: none;/);
+    expect(sign).toMatch(/font-style: normal;/);
+    expect(sign).toMatch(/word-spacing: normal;/);
+    expect(sign).toMatch(/letter-spacing: [^;]+;/);
+  });
+
   test('respects reduced motion', () => {
     expect(FAMILY_BAR_CSS).toContain('prefers-reduced-motion');
   });
@@ -306,5 +336,38 @@ describe('the stylesheet', () => {
     const sheets = root(el).adoptedStyleSheets?.length ?? 0;
     const styles = root(el).querySelectorAll('style').length;
     expect(sheets + styles).toBeGreaterThan(0);
+  });
+});
+
+describe('hostile attribute values', () => {
+  test('markup in current, mode or unavailable adds no element and no link', () => {
+    const evil = '<img src=x onerror="alert(1)"><a href="javascript:alert(1)">x</a>';
+    const cases: Record<string, string>[] = [
+      {current: evil},
+      {current: 'kouro', mode: evil},
+      {current: 'kouro', unavailable: `kansei ${evil}`},
+      {current: 'kouro', mode: 'home', unavailable: evil, compact: ''},
+    ];
+    for (const attrs of cases) {
+      const el = bar(attrs);
+      const r = root(el);
+      expect(r.querySelectorAll('img, script, iframe').length).toBe(0);
+      const allowed = new Set(FAMILY.flatMap((m) => [m.publicUrl, m.homeHref]));
+      for (const a of r.querySelectorAll('a')) expect(allowed.has(a.getAttribute('href'))).toBe(true);
+      expect(r.innerHTML).not.toContain('onerror');
+      expect(r.innerHTML).not.toContain('javascript:');
+      el.remove();
+    }
+  });
+});
+
+describe('the public API', () => {
+  test('is defineFamilyBar and FAMILY; placeMenu stays internal', () => {
+    expect(Object.keys(publicApi).sort()).toEqual(['FAMILY', 'defineFamilyBar']);
+  });
+
+  test('TypeScript knows the element by its tag', () => {
+    expectTypeOf(document.createElement('kk-family-bar')).toEqualTypeOf<FamilyBarElement>();
+    expectTypeOf<HTMLElementTagNameMap['kk-family-bar']>().toEqualTypeOf<FamilyBarElement>();
   });
 });

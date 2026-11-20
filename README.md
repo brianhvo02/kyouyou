@@ -55,7 +55,7 @@ so it works from a plain Node script, under vitest and in a Vite build alike.
 | `kyouyou/style/fonts.css` | `@font-face` rules for `KK B612` and `KK B612 Mono` (400, 700) and `KK Mincho` (Noto Serif JP cut to the family's kanji), loaded by relative URL from `style/fonts/` so the app's bundler copies them; OFL texts beside the files |
 | `kyouyou/style/base.css` | Opt-in base rules at zero specificity: body type, headings, Japanese names (`.kk-jp`, with `lang="ja"` on the element), figures, links, buttons (`.kk-button`, `.kk-button-primary`), inputs, the focus ring, reduced motion |
 | `kyouyou/style/fonts/*` | The font files and their licences |
-| `kyouyou/family-bar` | `<kk-family-bar current mode unavailable compact>`, a framework-free custom element registered by `defineFamilyBar()` (once; calling it again does nothing; does nothing outside a browser). The current member (`kuukou`, `kouro`, `kokuzu`, `kansei`, `kakunouko`) is the location sign, not a link, with `aria-current="page"`; the others are direction signs. `mode="public"` (default) links each public address and hides Kakunouko unless it is current; `mode="home"` links `../<app>/`, Kakunouko `../` and Kuukou the public dashboard. `unavailable="kansei kokuzu"` hides members (never the current one). `compact`, and every bar under 600 px of viewport, shows only the location sign, a button that opens the others (Enter, click or tap; Escape or a tap outside closes and focus returns). Its CSS is inside the module, applied in its shadow root (a constructed stylesheet, or a `<style>` where there is none), so it needs no loader and loads nothing from any origin; it takes the `--kk-` tokens through the shadow boundary, so it follows the root `data-theme` and the OS setting. `FAMILY` lists the members, names, kanji and links |
+| `kyouyou/family-bar` | `<kk-family-bar current mode unavailable compact>`, a framework-free custom element registered by `defineFamilyBar()` (once; calling it again does nothing; does nothing outside a browser). The current member (`kuukou`, `kouro`, `kokuzu`, `kansei`, `kakunouko`) is the location sign, not a link, with `aria-current="page"`; the others are direction signs. `mode="public"` (default) links each public address and hides Kakunouko unless it is current; `mode="home"` links `../<app>/`, Kakunouko `../` and Kuukou the public dashboard. `unavailable="kansei kokuzu"` hides members (never the current one). `compact`, and every bar under 600 px of viewport, shows only the location sign, a button that opens the others (Enter, click or tap; Escape or a tap outside closes and focus returns). Its CSS is inside the module, applied in its shadow root (a constructed stylesheet, or a `<style>` where there is none), so it needs no loader and loads nothing from any origin; it takes the `--kk-` tokens through the shadow boundary, so it follows the root `data-theme` and the OS setting. `FAMILY` lists the members, names, kanji and links; `FamilyBarElement` types the element (declared on `HTMLElementTagNameMap`) |
 
 No app data lives here: no Jeppesen, Navigraph or X-Plane files, and nothing converted from one.
 
@@ -110,8 +110,18 @@ defineFamilyBar();
 Load the style kit's `fonts.css` and `tokens.css` on the page too: faces cannot be declared inside a
 shadow root, and the tokens give the strip its themed ground and rule (without them it falls back to
 the light values). In home mode, pass the members `/api/server` reports unavailable; the bar never
-probes. React renders it as a plain custom element (declare `kk-family-bar` in the app's JSX
-intrinsic elements); set `compact` where an app's own toolbar hosts it.
+probes. The module declares the tag for TypeScript (`document.createElement('kk-family-bar')` is a
+`FamilyBarElement`). React renders it as a plain custom element (declare `kk-family-bar` in the app's
+JSX intrinsic elements); set `compact` where an app's own toolbar hosts it.
+
+A compact bar, and every bar under 600 px, opens its menu as an absolutely positioned panel just
+below the location sign, inside the bar. So the host must let it out:
+
+- No `overflow: hidden`, `auto` or `scroll`, and no `contain: paint`, on the toolbar or any ancestor
+  between it and the page, or the menu is clipped (the open menu is about 12 rem tall).
+- The open bar raises itself to `z-index: 1000`, but only within its own stacking context. If the
+  toolbar makes one (a `transform`, `filter`, `opacity` below 1, or `position` with a `z-index`),
+  give the toolbar itself a `z-index` above the content the menu must cover.
 
 ## Working on it
 

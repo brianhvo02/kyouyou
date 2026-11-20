@@ -17,8 +17,18 @@
  * Its CSS is in the module and applied in its shadow root (see family-bar-css.ts).
  */
 import {FAMILY_BAR_CSS} from './family-bar-css.ts';
+import {placeMenu} from './place-menu.ts';
 
 export type FamilyMemberId = 'kuukou' | 'kouro' | 'kokuzu' | 'kansei' | 'kakunouko';
+
+/** A <kk-family-bar>. It is driven by its attributes; it adds no properties of its own. */
+export interface FamilyBarElement extends HTMLElement {}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'kk-family-bar': FamilyBarElement;
+  }
+}
 export type FamilyBarMode = 'public' | 'home';
 
 export interface FamilyMember {
@@ -73,23 +83,6 @@ function icon(className: string, path: string): SVGSVGElement {
 /** The name and kanji of a sign. */
 function label(m: FamilyMember): Node[] {
   return [el('span', {class: 'name'}, m.name), el('span', {class: 'kk-jp', lang: 'ja'}, m.kanji)];
-}
-
-/** Room kept between the open menu and the viewport's edges, in px. */
-const EDGE = 8;
-
-/**
- * Which way the open menu hangs from the location sign, and how wide it may be, so it stays inside
- * the viewport wherever the host sits: rightward from the sign's left edge if it fits, else leftward
- * from its right edge, else on the roomier side, capped to that room.
- */
-export function placeMenu(
-  anchor: {readonly left: number; readonly right: number}, menuWidth: number, viewportWidth: number,
-): {side: 'start' | 'end'; maxWidth: number} {
-  const start = Math.max(0, viewportWidth - anchor.left - EDGE);
-  const end = Math.max(0, anchor.right - EDGE);
-  const side = menuWidth <= start || (menuWidth > end && start >= end) ? 'start' : 'end';
-  return {side, maxWidth: side === 'start' ? start : end};
 }
 
 let sheet: CSSStyleSheet | null | undefined;
@@ -237,8 +230,15 @@ function createElementClass(): CustomElementConstructor {
       }
       // While open, the bar rises above the page so its menu is never painted over.
       this.toggleAttribute('data-kk-open', open);
-      if (open) document.addEventListener('pointerdown', this.#onOutside, true);
-      else document.removeEventListener('pointerdown', this.#onOutside, true);
+      // Escape is heard on the page too: Safari does not focus a button on click, so after a mouse
+      // open the key never reaches the shadow root.
+      if (open) {
+        document.addEventListener('pointerdown', this.#onOutside, true);
+        document.addEventListener('keydown', this.#onPageKey);
+      } else {
+        document.removeEventListener('pointerdown', this.#onOutside, true);
+        document.removeEventListener('keydown', this.#onPageKey);
+      }
     }
 
     /** Measures the just-shown menu and keeps it inside the viewport (see placeMenu). */
@@ -266,6 +266,13 @@ function createElementClass(): CustomElementConstructor {
       const next = (e as FocusEvent).relatedTarget as Node | null;
       if (next && (next === this || this.contains(next) || this.#root.contains(next))) return;
       if (next) this.#setOpen(false);
+    };
+
+    #onPageKey = (e: KeyboardEvent): void => {
+      if (e.key !== 'Escape' || !this.#open || e.defaultPrevented) return;
+      e.preventDefault();
+      this.#setOpen(false);
+      this.#root.querySelector<HTMLButtonElement>('button.toggle')?.focus();
     };
 
     #onKey = (e: Event): void => {

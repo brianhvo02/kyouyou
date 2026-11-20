@@ -72,8 +72,11 @@ export const FAMILY_BAR_CSS = `
   font: inherit;
   font-size: var(--kk-step--1, 0.8125rem);
   font-weight: 700;
+  font-style: normal;
   line-height: 1;
   letter-spacing: 0.01em;
+  word-spacing: normal;
+  text-transform: none;
   white-space: nowrap;
   text-decoration: none;
 }

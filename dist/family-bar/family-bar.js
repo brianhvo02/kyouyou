@@ -17,6 +17,7 @@
  * Its CSS is in the module and applied in its shadow root (see family-bar-css.ts).
  */
 import { FAMILY_BAR_CSS } from "./family-bar-css.js";
+import { placeMenu } from "./place-menu.js";
 /** The family, in the bar's order. */
 export const FAMILY = [
     { id: 'kuukou', name: 'Kuukou', kanji: '拠点空港', publicUrl: 'https://kyotenkuukou.pages.dev/', homeHref: 'https://kyotenkuukou.pages.dev/' },
@@ -52,19 +53,6 @@ function icon(className, path) {
 /** The name and kanji of a sign. */
 function label(m) {
     return [el('span', { class: 'name' }, m.name), el('span', { class: 'kk-jp', lang: 'ja' }, m.kanji)];
-}
-/** Room kept between the open menu and the viewport's edges, in px. */
-const EDGE = 8;
-/**
- * Which way the open menu hangs from the location sign, and how wide it may be, so it stays inside
- * the viewport wherever the host sits: rightward from the sign's left edge if it fits, else leftward
- * from its right edge, else on the roomier side, capped to that room.
- */
-export function placeMenu(anchor, menuWidth, viewportWidth) {
-    const start = Math.max(0, viewportWidth - anchor.left - EDGE);
-    const end = Math.max(0, anchor.right - EDGE);
-    const side = menuWidth <= start || (menuWidth > end && start >= end) ? 'start' : 'end';
-    return { side, maxWidth: side === 'start' ? start : end };
 }
 let sheet;
 /** One constructed stylesheet shared by every bar, or null where the browser has none. */
@@ -212,10 +200,16 @@ function createElementClass() {
             }
             // While open, the bar rises above the page so its menu is never painted over.
             this.toggleAttribute('data-kk-open', open);
-            if (open)
+            // Escape is heard on the page too: Safari does not focus a button on click, so after a mouse
+            // open the key never reaches the shadow root.
+            if (open) {
                 document.addEventListener('pointerdown', this.#onOutside, true);
-            else
+                document.addEventListener('keydown', this.#onPageKey);
+            }
+            else {
                 document.removeEventListener('pointerdown', this.#onOutside, true);
+                document.removeEventListener('keydown', this.#onPageKey);
+            }
         }
         /** Measures the just-shown menu and keeps it inside the viewport (see placeMenu). */
         #place(button, menu) {
@@ -243,6 +237,13 @@ function createElementClass() {
                 return;
             if (next)
                 this.#setOpen(false);
+        };
+        #onPageKey = (e) => {
+            if (e.key !== 'Escape' || !this.#open || e.defaultPrevented)
+                return;
+            e.preventDefault();
+            this.#setOpen(false);
+            this.#root.querySelector('button.toggle')?.focus();
         };
         #onKey = (e) => {
             const k = e.key;
