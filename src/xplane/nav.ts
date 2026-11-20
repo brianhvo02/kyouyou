@@ -30,7 +30,11 @@ export interface Navaid {
   /** As written; meaning depends on the row code (see the file header). */
   value: number;
   ident: string;
-  /** Terminal airport; null for ENRT. */
+  /**
+   * The airport the row is tied to, as written; null for ENRT. Every row has the column: ILS and LOC
+   * components, glide slopes, markers, FPAP/GLS rows and DMEs paired with them name their airport, as do
+   * terminal VORs, NDBs and DMEs; en-route navaids write ENRT.
+   */
   airport: string | null;
   region: string;
   /** Rows 4–9 and 14–16: the runway; otherwise null. */

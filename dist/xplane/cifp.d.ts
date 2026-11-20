@@ -61,7 +61,7 @@ export interface CifpProcedure {
     kind: 'sid' | 'star' | 'approach';
     name: string;
     routes: CifpRoute[];
-    /** Approaches only, from the name: I -> ILS, L -> LOC, R -> RNAV, H -> RNP, else other; runway '24R' from 'I24R'/'R06LY'; variant 'Y'. */
+    /** Approaches only, from the name: I -> ILS, L -> LOC, R -> RNAV, H -> RNP, else other; runway '24R' from 'I24R'/'R06LY'/'R24R-Y'; variant 'Y' (or a digit after a dash, 'D24-2'). */
     approachType?: 'ILS' | 'LOC' | 'RNAV' | 'RNP' | 'other';
     runway?: string;
     variant?: string;

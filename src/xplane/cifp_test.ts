@@ -201,6 +201,17 @@ describe('parseCifp', () => {
     expect(parseCifp(leg({proc: 'TESTT2'})).procedures[0].approachType).toBeUndefined();
   });
 
+  test('reads the dash form of an approach name: runway, then variant after the dash', () => {
+    const a = parseCifp([
+      leg({row: 'APPCH', type: 'R', proc: 'R18-Z', fix: 'AAAAA'}),
+      leg({row: 'APPCH', type: 'I', proc: 'I09L-Y', fix: 'AAAAA'}),
+      leg({row: 'APPCH', type: 'D', proc: 'D27-2', fix: 'AAAAA'}),
+    ].join('\n'));
+    expect(a.procedures[2]).toMatchObject({approachType: 'other', runway: '27', variant: '2'});
+    expect(a.procedures[0]).toMatchObject({approachType: 'RNAV', runway: '18', variant: 'Z'});
+    expect(a.procedures[1]).toMatchObject({approachType: 'ILS', runway: '09L', variant: 'Y'});
+  });
+
   test('reads threshold elevation', () => {
     expect(parseCifp(rwy('RW06L', '00113', 'N33565680', 'W118255218')).runways[0].elevationFt).toBe(113);
     expect(parseCifp(rwy('RW06L', '     ', 'N33565680', 'W118255218')).runways[0].elevationFt).toBeNull();

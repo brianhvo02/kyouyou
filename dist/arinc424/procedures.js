@@ -84,12 +84,14 @@ function roleOf(c) {
 }
 function approachInfo(name) {
     const type = { I: 'ILS', L: 'LOC', R: 'RNAV', H: 'RNP' }[name[0]] ?? 'other';
-    const m = /^[A-Z](\d{2}[LRC]?)([A-Z]?)$/.exec(name);
+    // 'R06LY' and the dash form 'R18-Z' or 'D27-2': runway, then an optional variant (a digit only after a dash).
+    const m = /^[A-Z](\d{2}[LRC]?)(?:-([A-Z0-9])|([A-Z]))?$/.exec(name);
     const info = { approachType: type };
     if (m !== null) {
         info.runway = m[1];
-        if (m[2] !== '')
-            info.variant = m[2];
+        const variant = m[2] ?? m[3];
+        if (variant !== undefined)
+            info.variant = variant;
     }
     return info;
 }

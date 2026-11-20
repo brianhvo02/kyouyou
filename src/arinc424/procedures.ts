@@ -124,11 +124,13 @@ function roleOf(c: string): FixRole {
 
 function approachInfo(name: string): Pick<CifpProcedure, 'approachType' | 'runway' | 'variant'> {
   const type = ({I: 'ILS', L: 'LOC', R: 'RNAV', H: 'RNP'} as const)[name[0] as 'I' | 'L' | 'R' | 'H'] ?? 'other';
-  const m = /^[A-Z](\d{2}[LRC]?)([A-Z]?)$/.exec(name);
+  // 'R06LY' and the dash form 'R18-Z' or 'D27-2': runway, then an optional variant (a digit only after a dash).
+  const m = /^[A-Z](\d{2}[LRC]?)(?:-([A-Z0-9])|([A-Z]))?$/.exec(name);
   const info: Pick<CifpProcedure, 'approachType' | 'runway' | 'variant'> = {approachType: type};
   if (m !== null) {
     info.runway = m[1];
-    if (m[2] !== '') info.variant = m[2];
+    const variant = m[2] ?? m[3];
+    if (variant !== undefined) info.variant = variant;
   }
   return info;
 }
