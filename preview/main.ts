@@ -51,7 +51,7 @@ if (accents) {
   for (const m of FAMILY) {
     const value = make('span', {class: 'value kk-figures'});
     valueNodes.push([`--kk-${m.id}`, value]);
-    accents.append(make('li', {class: `accent accent-${m.id}`},
+    accents.append(make('li', {class: 'accent', 'data-kk-accent': m.id},
       make('span', {class: 'fill'}, m.name, ' ', make('span', {class: 'kk-jp', lang: 'ja'}, m.kanji)),
       make('code', {}, `--kk-${m.id}`), value,
       make('span', {class: 'as-text'}, `${m.name} as text`),
@@ -62,7 +62,7 @@ if (accents) {
 const primaries = document.querySelector<HTMLElement>('[data-primaries]');
 if (primaries) {
   for (const m of FAMILY) {
-    primaries.append(make('button', {class: `kk-button-primary accent-${m.id}`}, `Open ${m.name}`));
+    primaries.append(make('button', {class: 'kk-button-primary', 'data-kk-accent': m.id}, `Open ${m.name}`));
   }
 }
 

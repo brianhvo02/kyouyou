@@ -1,18 +1,5 @@
 /* The preview page's own layout. Colours, type and spacing come from the kit's tokens only. */
 
-/* Per-member accent on a part of the page. --kk-accent-text is computed where it is declared, so a
-   scope that changes the accent declares it again (an app sets its accent on :root and needs none). */
-.accent-kuukou { --kk-accent: var(--kk-kuukou); --kk-on-accent: var(--kk-on-kuukou); }
-.accent-kouro { --kk-accent: var(--kk-kouro); --kk-on-accent: var(--kk-on-kouro); }
-.accent-kokuzu { --kk-accent: var(--kk-kokuzu); --kk-on-accent: var(--kk-on-kokuzu); }
-.accent-kansei { --kk-accent: var(--kk-kansei); --kk-on-accent: var(--kk-on-kansei); }
-.accent-kakunouko { --kk-accent: var(--kk-kakunouko); --kk-on-accent: var(--kk-on-kakunouko); }
-[class*="accent-"] { --kk-accent-text: oklch(from var(--kk-accent) min(l, 0.5) c h); }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) [class*="accent-"] { --kk-accent-text: oklch(from var(--kk-accent) max(l, 0.75) c h); }
-}
-:root[data-theme="dark"] [class*="accent-"] { --kk-accent-text: oklch(from var(--kk-accent) max(l, 0.75) c h); }
-
 .wrap {
   max-width: 72rem;
   margin: 0 auto;
@@ -266,6 +253,25 @@ main h3 { margin-top: var(--kk-space-5); }
   box-shadow: 0 0 0 var(--kk-focus-width) var(--kk-focus-inner);
 }
 
+/* Figures in readouts: the same string in both faces, large enough to see the spacing. */
+.readouts { margin: 0; }
+.readouts div {
+  display: grid;
+  grid-template-columns: 17rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--kk-space-4);
+  padding-block: var(--kk-space-2);
+  border-bottom: 1px solid var(--kk-rule);
+}
+.readouts dt { font-size: var(--kk-step--1); color: var(--kk-ink-muted); }
+.readouts dd { margin: 0; font-size: var(--kk-step-3); white-space: pre-wrap; }
+.readout-text { font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) {
+  .readouts div { grid-template-columns: minmax(0, 1fr); gap: var(--kk-space-1); }
+  .readouts dd { font-size: var(--kk-step-1); }
+  .faces .face-name { display: block; }
+}
+
 /* The member panels */
 .panels {
   display: grid;
@@ -273,13 +279,13 @@ main h3 { margin-top: var(--kk-space-5); }
   gap: var(--kk-space-4);
 }
 /* The departures board takes the room of two panels. */
-.panels .accent-kuukou { grid-column: span 2; }
+.panels [data-kk-accent="kuukou"] { grid-column: span 2; }
 @media (max-width: 960px) {
   .panels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
   .panels { grid-template-columns: minmax(0, 1fr); }
-  .panels .accent-kuukou { grid-column: auto; }
+  .panels [data-kk-accent="kuukou"] { grid-column: auto; }
 }
 .panel {
   display: flex;

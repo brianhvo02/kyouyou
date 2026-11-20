@@ -33,7 +33,7 @@
     <p class="note">One accent and one signature element per member, on the shared ground, type and controls.</p>
     <div class="panels">
 
-      <article class="panel accent-kouro">
+      <article class="panel" data-kk-accent="kouro">
         <h3>Kouro <span class="kk-jp" lang="ja">航路</span></h3>
         <p class="what">Plans the flight</p>
         <div class="sig fmc">
@@ -52,7 +52,7 @@
         <button class="kk-button-primary">Build the plan</button>
       </article>
 
-      <article class="panel accent-kokuzu">
+      <article class="panel" data-kk-accent="kokuzu">
         <h3>Kōkūzu <span class="kk-jp" lang="ja">航空図</span></h3>
         <p class="what">Shows the charts and map</p>
         <div class="sig chart">
@@ -67,7 +67,7 @@
         <button class="kk-button-primary">Open the chart</button>
       </article>
 
-      <article class="panel accent-kansei">
+      <article class="panel" data-kk-accent="kansei">
         <h3>Kansei <span class="kk-jp" lang="ja">管制</span></h3>
         <p class="what">Talks to you as ATC</p>
         <div class="sig radio">
@@ -78,7 +78,7 @@
         <button class="kk-button-primary">Hold to talk</button>
       </article>
 
-      <article class="panel accent-kakunouko">
+      <article class="panel" data-kk-accent="kakunouko">
         <h3>Kakunouko <span class="kk-jp" lang="ja">格納庫</span></h3>
         <p class="what">Keeps your data at home</p>
         <div class="sig hangar">
@@ -91,7 +91,7 @@
         <button class="kk-button-primary">Pair a device</button>
       </article>
 
-      <article class="panel accent-kuukou">
+      <article class="panel" data-kk-accent="kuukou">
         <h3>Kuukou <span class="kk-jp" lang="ja">拠点空港</span></h3>
         <p class="what">The family's front door</p>
         <div class="sig board">
@@ -137,12 +137,12 @@
 
     <h3>Compact, inside an app's own toolbar</h3>
     <p class="note">Where an app's toolbar fills the top, only the location sign sits in it and opens the others.</p>
-    <div class="toolbar accent-kokuzu" role="toolbar" aria-label="Map toolbar (example)">
+    <div class="toolbar" data-kk-accent="kokuzu" role="toolbar" aria-label="Map toolbar (example)">
       <kk-family-bar current="kokuzu" compact></kk-family-bar>
       <input type="search" placeholder="Airport or chart" aria-label="Airport or chart">
       <button>Layers</button>
     </div>
-    <div class="toolbar accent-kansei end" role="toolbar" aria-label="Radio toolbar (example)">
+    <div class="toolbar end" data-kk-accent="kansei" role="toolbar" aria-label="Radio toolbar (example)">
       <span class="toolbar-title">COM 1</span>
       <output class="kk-figures toolbar-freq">124.300</output>
       <kk-family-bar current="kansei" compact></kk-family-bar>
@@ -180,6 +180,14 @@
       <p class="kk-figures"><span class="face-name">Figures</span> 124.300  FL410  6,412 lb  0°/360°</p>
       <p><span class="face-name">Names</span> <span class="kk-jp" lang="ja">拠点空港 航路 航空図 管制 格納庫</span></p>
     </div>
+    <h3>Figures in readouts</h3>
+    <p class="note">B612's digits are already all one width, as wide as B612 Mono's, so columns of
+      figures line up in either face. The difference is the points, commas and spaces: B612 keeps them
+      narrow, B612 Mono gives each a full cell.</p>
+    <dl class="readouts">
+      <div><dt>B612 Mono (<code>--kk-font-figures</code>)</dt><dd class="kk-figures">124.300  6,412 lb  FL410</dd></div>
+      <div><dt>B612 (<code>--kk-font-text</code>)</dt><dd class="readout-text">124.300  6,412 lb  FL410</dd></div>
+    </dl>
   </section>
 
   <section aria-labelledby="h-controls">
@@ -193,7 +201,7 @@
         <button class="is-focus">Focused</button>
         <a href="#h-controls">A link in the accent</a>
       </div>
-      <div class="control-row accent-row" data-primaries></div>
+      <div class="control-row" data-primaries></div>
       <div class="fields">
         <label>Departure <input value="KSFO" autocomplete="off"></label>
         <label>Arrival <input placeholder="ICAO code" autocomplete="off"></label>
