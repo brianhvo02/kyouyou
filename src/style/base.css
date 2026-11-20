@@ -1,6 +1,8 @@
 /* Kyoten Kuukou (拠点空港) family base rules. Opt-in: an app adopts them when it restyles; the
    tokens and the family bar work without them. Needs tokens.css (and fonts.css for the faces).
-   Every selector sits in :where(), so an app's own rules win without a fight. */
+   Every selector sits in :where(), so an app's own rules win without a fight. A pseudo-element
+   cannot go inside :where() (it would be dropped), so it follows it: ::selection and ::placeholder
+   weigh one element, as little as a selector can. */
 
 :where(:root) {
   color-scheme: light;
@@ -18,7 +20,7 @@
   color-scheme: dark;
 }
 
-:where(*, *::before, *::after) {
+:where(*), :where(*)::before, :where(*)::after {
   box-sizing: border-box;
 }
 
@@ -97,7 +99,7 @@
   margin: var(--kk-space-5) 0;
 }
 
-:where(::selection) {
+::selection {
   background: color-mix(in oklab, var(--kk-accent) 40%, transparent);
   color: inherit;
 }
@@ -155,7 +157,7 @@
   min-height: 5rem;
   resize: vertical;
 }
-:where(input::placeholder, textarea::placeholder) {
+:where(input, textarea)::placeholder {
   color: var(--kk-ink-muted);
   opacity: 1;
 }
@@ -180,7 +182,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :where(*, *::before, *::after) {
+  :where(*), :where(*)::before, :where(*)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

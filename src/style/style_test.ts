@@ -255,6 +255,16 @@ describe('base.css', () => {
     expect(read('base.css')).not.toMatch(/:lang\(|\[lang/);
   });
 
+  test('colours placeholders in muted ink (held at 4.5:1 by the contrast test), in either theme', () => {
+    const placeholder = rules().find((r) => r.selector === ':where(input, textarea)::placeholder');
+    expect(placeholder?.body).toMatch(/color:\s*var\(--kk-ink-muted\)/);
+    expect(placeholder?.body).toMatch(/opacity:\s*1/);
+  });
+
+  test('tints the selection with the accent', () => {
+    expect(rules().find((r) => r.selector === '::selection')?.body).toMatch(/var\(--kk-accent\)/);
+  });
+
   test('sets form fields at the body weight, after the rule that makes them inherit the font', () => {
     const all = rules();
     const inherit = all.findIndex((r) => /font:\s*inherit/.test(r.body));
