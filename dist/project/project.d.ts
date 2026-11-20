@@ -1,3 +1,4 @@
+import type { Plugin } from 'vite';
 export type ProjectId = 'kouro' | 'kokuzu' | 'kansei' | 'kyouyou';
 export interface ChangeSet {
     added: string[];
@@ -52,3 +53,7 @@ export declare function buildProjectJson(meta: ProjectMeta, version: string, sou
     roadmap: string;
     readme: string;
 }): ProjectJson;
+/** Reads the sources from `root` and writes project.json to `outFile`. */
+export declare function writeProjectJson(meta: ProjectMeta, root: string, outFile: string): ProjectJson;
+/** Vite plugin: emits project.json into the build output; a bad source fails the build. */
+export declare function projectJsonPlugin(meta: ProjectMeta, root?: string): Plugin;

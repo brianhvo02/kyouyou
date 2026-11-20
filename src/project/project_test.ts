@@ -1,10 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   buildProjectJson,
   parseChangelog,
   parseFeatures,
   parseRoadmap,
+  projectJsonPlugin,
   ProjectSourceError,
+  writeProjectJson,
   type ProjectMeta,
 } from './project.ts';
 
@@ -158,5 +163,73 @@ describe('buildProjectJson', () => {
     expect(() => buildProjectJson(META, '0.2.0', { ...sources, changelog })).not.toThrow();
     const bare = CHANGELOG.replace('- Another one.', '- Contact owner@example.com now.');
     expect(() => buildProjectJson(META, '0.2.0', { ...sources, changelog: bare })).toThrow(ProjectSourceError);
+  });
+});
+
+function callHook(plugin: object, name: 'buildStart' | 'generateBundle', ctx: object): void {
+  const hook = (plugin as Record<string, unknown>)[name] as ((this: object) => void) | { handler: (this: object) => void };
+  (typeof hook === 'function' ? hook : hook.handler).call(ctx);
+}
+
+describe('project.json writer and plugin', () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
+  });
+
+  function makeRoot(version: string): string {
+    const root = mkdtempSync(join(tmpdir(), 'project-test-'));
+    dirs.push(root);
+    writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'demo', version }));
+    writeFileSync(join(root, 'CHANGELOG.md'), CHANGELOG);
+    writeFileSync(join(root, 'ROADMAP.md'), ROADMAP);
+    writeFileSync(join(root, 'README.md'), README);
+    return root;
+  }
+
+  it('writeProjectJson writes pretty JSON with a trailing newline and returns it', () => {
+    const root = makeRoot('0.2.0');
+    const out = join(root, 'project.json');
+    const project = writeProjectJson(META, root, out);
+    const text = readFileSync(out, 'utf8');
+    expect(text.endsWith('\n')).toBe(true);
+    expect(text).toBe(`${JSON.stringify(project, null, 2)}\n`);
+    expect(project.version).toBe('0.2.0');
+    expect(project.released).toBe('2026-11-19');
+  });
+
+  it('writeProjectJson throws ProjectSourceError for a version missing from the changelog', () => {
+    const root = makeRoot('9.9.9');
+    expect(() => writeProjectJson(META, root, join(root, 'project.json'))).toThrow(ProjectSourceError);
+  });
+
+  it('writeProjectJson throws ProjectSourceError for a missing source file', () => {
+    const root = makeRoot('0.2.0');
+    rmSync(join(root, 'ROADMAP.md'));
+    expect(() => writeProjectJson(META, root, join(root, 'project.json'))).toThrow(ProjectSourceError);
+  });
+
+  it('plugin emits project.json once in generateBundle', () => {
+    const root = makeRoot('0.2.0');
+    const plugin = projectJsonPlugin(META, root);
+    const emitFile = vi.fn();
+    const ctx = { emitFile, error: (m: string): never => { throw new Error(m); } };
+    callHook(plugin, 'buildStart', ctx);
+    callHook(plugin, 'generateBundle', ctx);
+    expect(emitFile).toHaveBeenCalledTimes(1);
+    const arg = emitFile.mock.calls[0]?.[0] as { type: string; fileName: string; source: string };
+    expect(arg.type).toBe('asset');
+    expect(arg.fileName).toBe('project.json');
+    expect(JSON.parse(arg.source).version).toBe('0.2.0');
+    expect(arg.source.endsWith('\n')).toBe(true);
+  });
+
+  it('plugin buildStart fails the build on a version missing from the changelog', () => {
+    const root = makeRoot('9.9.9');
+    const plugin = projectJsonPlugin(META, root);
+    const error = vi.fn((m: string): never => { throw new Error(m); });
+    const ctx = { emitFile: vi.fn(), error };
+    expect(() => callHook(plugin, 'buildStart', ctx)).toThrow(/9\.9\.9/);
+    expect(error).toHaveBeenCalledTimes(1);
   });
 });

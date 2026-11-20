@@ -1,5 +1,9 @@
 // Turns an app's CHANGELOG.md, ROADMAP.md and README "Features" list into project.json (schema 1)
-// for the hub dashboard. A line-based reader; it imports nothing and has no dependencies.
+// for the hub dashboard. A line-based reader; it has no dependencies (Vite is a type-only import).
+
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import type { Plugin } from 'vite';
 
 export type ProjectId = 'kouro' | 'kokuzu' | 'kansei' | 'kyouyou';
 
@@ -167,4 +171,56 @@ export function buildProjectJson(
   for (const f of project.features) texts.push(['features', `${f.summary} ${f.detail}`]);
   for (const [where, t] of texts) checkPrivate(t, where);
   return project;
+}
+
+function readSource(root: string, name: string): string {
+  try {
+    return readFileSync(join(root, name), 'utf8');
+  } catch {
+    throw new ProjectSourceError(`cannot read ${name} in ${root}`);
+  }
+}
+
+function buildFromFiles(meta: ProjectMeta, root: string): ProjectJson {
+  let version: unknown;
+  try {
+    version = (JSON.parse(readSource(root, 'package.json')) as {version?: unknown}).version;
+  } catch (e) {
+    if (e instanceof ProjectSourceError) throw e;
+    throw new ProjectSourceError('package.json is not valid JSON');
+  }
+  if (typeof version !== 'string' || version === '') throw new ProjectSourceError('package.json has no version');
+  return buildProjectJson(meta, version, {
+    changelog: readSource(root, 'CHANGELOG.md'),
+    roadmap: readSource(root, 'ROADMAP.md'),
+    readme: readSource(root, 'README.md'),
+  });
+}
+
+const serialize = (project: ProjectJson): string => `${JSON.stringify(project, null, 2)}\n`;
+
+/** Reads the sources from `root` and writes project.json to `outFile`. */
+export function writeProjectJson(meta: ProjectMeta, root: string, outFile: string): ProjectJson {
+  const project = buildFromFiles(meta, root);
+  writeFileSync(outFile, serialize(project));
+  return project;
+}
+
+/** Vite plugin: emits project.json into the build output; a bad source fails the build. */
+export function projectJsonPlugin(meta: ProjectMeta, root: string = process.cwd()): Plugin {
+  let source = '';
+  return {
+    name: 'kyouyou-project-json',
+    buildStart() {
+      try {
+        source = serialize(buildFromFiles(meta, root));
+      } catch (e) {
+        if (e instanceof ProjectSourceError) this.error(`project.json: ${e.message}`);
+        throw e;
+      }
+    },
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'project.json', source });
+    },
+  };
 }
