@@ -75,6 +75,23 @@ function label(m: FamilyMember): Node[] {
   return [el('span', {class: 'name'}, m.name), el('span', {class: 'kk-jp', lang: 'ja'}, m.kanji)];
 }
 
+/** Room kept between the open menu and the viewport's edges, in px. */
+const EDGE = 8;
+
+/**
+ * Which way the open menu hangs from the location sign, and how wide it may be, so it stays inside
+ * the viewport wherever the host sits: rightward from the sign's left edge if it fits, else leftward
+ * from its right edge, else on the roomier side, capped to that room.
+ */
+export function placeMenu(
+  anchor: {readonly left: number; readonly right: number}, menuWidth: number, viewportWidth: number,
+): {side: 'start' | 'end'; maxWidth: number} {
+  const start = Math.max(0, viewportWidth - anchor.left - EDGE);
+  const end = Math.max(0, anchor.right - EDGE);
+  const side = menuWidth <= start || (menuWidth > end && start >= end) ? 'start' : 'end';
+  return {side, maxWidth: side === 'start' ? start : end};
+}
+
 let sheet: CSSStyleSheet | null | undefined;
 
 /** One constructed stylesheet shared by every bar, or null where the browser has none. */
@@ -216,11 +233,25 @@ function createElementClass(): CustomElementConstructor {
       if (button && menu) {
         button.setAttribute('aria-expanded', String(open));
         menu.hidden = !open;
+        if (open) this.#place(button, menu);
       }
       // While open, the bar rises above the page so its menu is never painted over.
       this.toggleAttribute('data-kk-open', open);
       if (open) document.addEventListener('pointerdown', this.#onOutside, true);
       else document.removeEventListener('pointerdown', this.#onOutside, true);
+    }
+
+    /** Measures the just-shown menu and keeps it inside the viewport (see placeMenu). */
+    #place(button: HTMLElement, menu: HTMLElement): void {
+      menu.style.maxWidth = '';
+      menu.style.minWidth = '';
+      const width = menu.getBoundingClientRect().width;
+      // The layout viewport without its scrollbar; innerWidth where there is no layout (jsdom).
+      const viewport = document.documentElement.clientWidth || innerWidth;
+      const {side, maxWidth} = placeMenu(button.getBoundingClientRect(), width, viewport);
+      menu.dataset.side = side;
+      menu.style.maxWidth = `${maxWidth}px`;
+      if (width > maxWidth) menu.style.minWidth = '0';
     }
 
     #onWidth = (): void => {

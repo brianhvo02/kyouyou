@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
-import {FAMILY, defineFamilyBar} from './family-bar.ts';
+import {FAMILY, defineFamilyBar, placeMenu} from './family-bar.ts';
 import {FAMILY_BAR_CSS} from './family-bar-css.ts';
 
 /** A stand-in for window.matchMedia whose answer the test sets and changes. */
@@ -240,6 +240,42 @@ describe('the collapsed bar (compact, or narrow)', () => {
     const el = bar({current: 'kouro', compact: ''});
     el.removeAttribute('compact');
     expect(toggle(el)).toBeNull();
+  });
+});
+
+describe('the menu stays inside the viewport', () => {
+  const MARGIN = 8;
+
+  test('opens rightward from a host at the left edge', () => {
+    expect(placeMenu({left: 8, right: 120}, 208, 320)).toEqual({side: 'start', maxWidth: 320 - 8 - MARGIN});
+  });
+
+  test('opens leftward from a compact host at the right edge of a 320 px toolbar', () => {
+    expect(placeMenu({left: 210, right: 312}, 208, 320)).toEqual({side: 'end', maxWidth: 312 - MARGIN});
+  });
+
+  test('takes the roomier side, capped to it, when neither side fits whole', () => {
+    expect(placeMenu({left: 100, right: 200}, 400, 320)).toEqual({side: 'start', maxWidth: 320 - 100 - MARGIN});
+    expect(placeMenu({left: 150, right: 250}, 400, 320)).toEqual({side: 'end', maxWidth: 250 - MARGIN});
+  });
+
+  test('a right-edge compact bar at 320 px aligns its open menu to the right and caps its width', () => {
+    vi.stubGlobal('innerWidth', 320);
+    const el = bar({current: 'kansei', mode: 'home', compact: ''});
+    const button = toggle(el)!;
+    button.getBoundingClientRect = () => ({left: 210, right: 312, top: 0, bottom: 30, width: 102, height: 30, x: 210, y: 0, toJSON: () => ({})});
+    menu(el).getBoundingClientRect = () => ({left: 210, right: 418, top: 34, bottom: 220, width: 208, height: 186, x: 210, y: 34, toJSON: () => ({})});
+    button.click();
+    expect(menu(el).dataset.side).toBe('end');
+    expect(menu(el).style.maxWidth).toBe(`${312 - MARGIN}px`);
+    button.click();
+    vi.stubGlobal('innerWidth', 1280);
+    button.click();
+    expect(menu(el).dataset.side).toBe('start');
+  });
+
+  test('the stylesheet anchors an end-side menu to the right edge of the sign', () => {
+    expect(FAMILY_BAR_CSS).toMatch(/\.menu\[data-side="end"\] \{ left: auto; right: 0; \}/);
   });
 });
 

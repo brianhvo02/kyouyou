@@ -163,6 +163,7 @@ button[aria-expanded="true"] .caret { transform: rotate(180deg); }
   animation: drop 120ms ease-out;
 }
 .menu[hidden] { display: none; }
+.menu[data-side="end"] { left: auto; right: 0; }
 .menu > li { display: flex; }
 .menu .sign {
   flex: 1;
