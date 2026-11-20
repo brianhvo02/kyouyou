@@ -1,0 +1,424 @@
+/* The preview page's own layout. Colours, type and spacing come from the kit's tokens only. */
+
+/* Per-member accent on a part of the page. --kk-accent-text is computed where it is declared, so a
+   scope that changes the accent declares it again (an app sets its accent on :root and needs none). */
+.accent-kuukou { --kk-accent: var(--kk-kuukou); --kk-on-accent: var(--kk-on-kuukou); }
+.accent-kouro { --kk-accent: var(--kk-kouro); --kk-on-accent: var(--kk-on-kouro); }
+.accent-kokuzu { --kk-accent: var(--kk-kokuzu); --kk-on-accent: var(--kk-on-kokuzu); }
+.accent-kansei { --kk-accent: var(--kk-kansei); --kk-on-accent: var(--kk-on-kansei); }
+.accent-kakunouko { --kk-accent: var(--kk-kakunouko); --kk-on-accent: var(--kk-on-kakunouko); }
+[class*="accent-"] { --kk-accent-text: oklch(from var(--kk-accent) min(l, 0.5) c h); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) [class*="accent-"] { --kk-accent-text: oklch(from var(--kk-accent) max(l, 0.75) c h); }
+}
+:root[data-theme="dark"] [class*="accent-"] { --kk-accent-text: oklch(from var(--kk-accent) max(l, 0.75) c h); }
+
+.wrap {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding-inline: var(--kk-space-5);
+}
+@media (max-width: 600px) {
+  .wrap { padding-inline: var(--kk-space-4); }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Masthead */
+.masthead {
+  padding-block: var(--kk-space-6) var(--kk-space-5);
+  border-bottom: 1px solid var(--kk-rule);
+  background: var(--kk-surface);
+}
+.masthead-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--kk-space-5);
+}
+.title-jp {
+  margin-inline-start: var(--kk-space-2);
+  font-size: var(--kk-step-2);
+  color: var(--kk-ink-muted);
+}
+.lede { margin: 0; color: var(--kk-ink-muted); max-width: 62ch; }
+
+.theme-switch {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--kk-rule-strong);
+  border-radius: var(--kk-radius-control);
+  background: var(--kk-ground);
+}
+.theme-switch legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.theme-switch label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 var(--kk-space-4);
+  cursor: pointer;
+}
+.theme-switch label + label { border-inline-start: 1px solid var(--kk-rule); }
+.theme-switch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.theme-switch label:has(input:checked) {
+  background: var(--kk-ink);
+  color: var(--kk-ground);
+}
+.theme-switch label:has(input:focus-visible) {
+  outline: var(--kk-focus-width) solid var(--kk-focus-outer);
+  outline-offset: var(--kk-focus-width);
+  box-shadow: 0 0 0 var(--kk-focus-width) var(--kk-focus-inner);
+  z-index: 1;
+}
+
+/* Sections */
+main > section {
+  padding-block: var(--kk-space-6);
+  border-bottom: 1px solid var(--kk-rule);
+}
+main > section:last-child { border-bottom: 0; padding-bottom: var(--kk-space-7); }
+main h3 { margin-top: var(--kk-space-5); }
+.note { color: var(--kk-ink-muted); font-size: var(--kk-step--1); }
+
+/* The family bar rows */
+.bar-rows {
+  display: grid;
+  gap: var(--kk-space-2);
+  margin-bottom: var(--kk-space-4);
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 17rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--kk-space-4);
+}
+.bar-row > code {
+  font-size: var(--kk-step--2);
+  color: var(--kk-ink-muted);
+}
+.bar-row kk-family-bar {
+  border: 1px solid var(--kk-rule);
+  border-bottom: 0;
+}
+@media (max-width: 760px) {
+  .bar-row { grid-template-columns: minmax(0, 1fr); gap: var(--kk-space-1); }
+  .bar-row + .bar-row { margin-top: var(--kk-space-2); }
+}
+
+/* A mock app toolbar hosting the compact bar. */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--kk-space-3);
+  max-width: 44rem;
+  margin-bottom: var(--kk-space-3);
+  padding: var(--kk-space-2) var(--kk-space-3);
+  background: var(--kk-surface);
+  border: 1px solid var(--kk-rule);
+  border-top: 3px solid var(--kk-accent);
+  border-radius: var(--kk-radius-panel);
+}
+.toolbar input { flex: 1; min-width: 0; }
+.toolbar.end kk-family-bar { margin-inline-start: auto; }
+.toolbar-title { font-weight: 700; }
+.toolbar-freq { color: var(--kk-accent-text); font-size: var(--kk-step-1); }
+
+.frame-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.frame-700 {
+  display: block;
+  width: 700px;
+  height: 48px;
+  border: 1px dashed var(--kk-rule-strong);
+  background: var(--kk-ground);
+}
+
+/* Colour */
+.swatches, .accents, .scale {
+  margin: 0 0 var(--kk-space-4);
+  padding: 0;
+  list-style: none;
+}
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--kk-space-3);
+}
+.swatch {
+  display: grid;
+  gap: var(--kk-space-1);
+  font-size: var(--kk-step--1);
+}
+.chip {
+  height: 3.5rem;
+  border: 1px solid var(--kk-rule-strong);
+  border-radius: var(--kk-radius-control);
+}
+.value { color: var(--kk-ink-muted); font-size: var(--kk-step--2); }
+
+.accents {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: var(--kk-space-4);
+}
+.accent {
+  display: grid;
+  gap: var(--kk-space-1);
+  font-size: var(--kk-step--1);
+}
+.accent .fill {
+  display: flex;
+  align-items: center;
+  gap: var(--kk-space-2);
+  min-height: 3.5rem;
+  padding: 0 var(--kk-space-3);
+  background: var(--kk-accent);
+  color: var(--kk-on-accent);
+  font-size: var(--kk-step-1);
+  font-weight: 700;
+  border-radius: var(--kk-radius-control);
+}
+.accent .fill .kk-jp { font-size: var(--kk-step--1); }
+.accent .as-text { color: var(--kk-accent-text); font-weight: 700; font-size: var(--kk-step-0); }
+
+/* Type */
+.scale li {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--kk-space-4);
+  padding-block: var(--kk-space-2);
+  border-bottom: 1px solid var(--kk-rule);
+}
+.scale .meta { display: flex; gap: var(--kk-space-2); align-items: baseline; font-size: var(--kk-step--2); }
+.scale .sample { font-weight: 700; line-height: var(--kk-leading-tight); overflow-wrap: anywhere; }
+.scale li:nth-last-child(-n+3) .sample { font-weight: 400; }
+@media (max-width: 600px) {
+  .scale li { grid-template-columns: minmax(0, 1fr); gap: var(--kk-space-1); }
+}
+.faces p { margin-bottom: var(--kk-space-2); }
+.face-name {
+  display: inline-block;
+  min-width: 5rem;
+  font-family: var(--kk-font-text);
+  font-size: var(--kk-step--1);
+  color: var(--kk-ink-muted);
+}
+.faces .kk-jp { font-size: var(--kk-step-1); }
+
+/* Controls */
+.control-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--kk-space-3);
+  margin-bottom: var(--kk-space-4);
+}
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--kk-space-4);
+  align-items: end;
+}
+.fields label:not(.inline) { display: grid; gap: var(--kk-space-1); }
+.fields label.inline { display: flex; align-items: center; gap: var(--kk-space-2); min-height: 2.5rem; }
+.fields fieldset {
+  display: flex;
+  gap: var(--kk-space-4);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.fields legend { padding: 0; margin-bottom: var(--kk-space-1); font-weight: 700; }
+.fields fieldset label { font-weight: 400; }
+.fields .wide { grid-column: span 2; }
+@media (max-width: 600px) {
+  .fields .wide { grid-column: auto; }
+}
+/* The kit's focus ring, drawn statically so it shows in a screenshot. */
+.is-focus {
+  outline: var(--kk-focus-width) solid var(--kk-focus-outer);
+  outline-offset: var(--kk-focus-width);
+  box-shadow: 0 0 0 var(--kk-focus-width) var(--kk-focus-inner);
+}
+
+/* The member panels */
+.panels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--kk-space-4);
+}
+/* The departures board takes the room of two panels. */
+.panels .accent-kuukou { grid-column: span 2; }
+@media (max-width: 960px) {
+  .panels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .panels { grid-template-columns: minmax(0, 1fr); }
+  .panels .accent-kuukou { grid-column: auto; }
+}
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kk-space-3);
+  padding: var(--kk-space-4);
+  background: var(--kk-surface);
+  border: 1px solid var(--kk-rule);
+  border-top: 4px solid var(--kk-accent);
+  border-radius: var(--kk-radius-panel);
+}
+.panel h3 { display: flex; align-items: baseline; gap: var(--kk-space-2); margin: 0; }
+.panel h3 .kk-jp { font-size: var(--kk-step--1); color: var(--kk-ink-muted); }
+.panel .what { margin: calc(-1 * var(--kk-space-2)) 0 0; color: var(--kk-ink-muted); font-size: var(--kk-step--1); }
+.panel > button { align-self: flex-start; margin-top: auto; }
+.sig {
+  flex: 1;
+  padding: var(--kk-space-3);
+  border-radius: var(--kk-radius-control);
+  font-size: var(--kk-step--1);
+}
+.sig p { margin: 0; }
+
+/* Kouro: the flight computer, the active route in magenta. */
+.fmc { background: var(--kk-ground); border: 1px solid var(--kk-rule); }
+.fmc svg { display: block; width: 100%; height: 4rem; }
+.fmc .route { fill: none; stroke: var(--kk-kouro); stroke-width: 2.5; vector-effect: non-scaling-stroke; }
+.fmc .fix { fill: var(--kk-ink); }
+.fmc .apt { fill: var(--kk-surface); stroke: var(--kk-ink); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.fmc-row {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
+  gap: var(--kk-space-2);
+  margin: var(--kk-space-2) 0 0;
+}
+.fmc-row dt { font-family: var(--kk-font-text); font-size: var(--kk-step--2); color: var(--kk-ink-muted); }
+.fmc-row dd { margin: 0; font-weight: 700; }
+.fmc-row .hot dd { color: var(--kk-accent-text); }
+
+/* Kōkūzu: chart paper with its chart tabs in cyan. */
+.chart {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 11px, color-mix(in oklab, var(--kk-kokuzu) 14%, transparent) 11px 12px),
+    var(--kk-surface);
+  border: 1px solid color-mix(in oklab, var(--kk-kokuzu) 30%, var(--kk-rule));
+}
+.tabs { display: flex; gap: var(--kk-space-1); margin-bottom: var(--kk-space-3); }
+.tabs button {
+  min-height: 1.75rem;
+  padding: 0 var(--kk-space-2);
+  border-color: var(--kk-accent);
+  border-radius: var(--kk-radius-sign);
+  background: var(--kk-surface);
+  color: var(--kk-accent-text);
+  font-size: var(--kk-step--2);
+}
+.tabs button[aria-selected="true"] { background: var(--kk-accent); color: var(--kk-on-accent); }
+.chart-name { font-weight: 700; }
+.chart-pin { color: var(--kk-ink-muted); }
+
+/* Kansei: the radio panel, a lit readout on its own dark face in either theme. */
+.radio {
+  background: color-mix(in oklab, var(--kk-chart-ink) 80%, var(--kk-sign-black));
+  color: #d5e3dc;
+  border: 1px solid var(--kk-sign-black);
+}
+.radio .station { display: flex; align-items: center; gap: var(--kk-space-2); }
+.radio .tx {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--kk-kansei);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--kk-kansei) 35%, transparent);
+}
+.radio .freq {
+  display: block;
+  margin-block: var(--kk-space-1);
+  font-size: var(--kk-step-4);
+  line-height: 1.1;
+  color: oklch(from var(--kk-kansei) 0.82 c h);
+}
+.radio .said { font-size: var(--kk-step--1); }
+
+/* Kakunouko: the hangar status in amber. */
+.hangar {
+  background: color-mix(in oklab, var(--kk-kakunouko) 8%, var(--kk-surface));
+  border: 1px solid color-mix(in oklab, var(--kk-kakunouko) 35%, var(--kk-rule));
+}
+.hangar .bay { display: grid; margin-bottom: var(--kk-space-2); }
+.hangar .cycle {
+  font-size: var(--kk-step-4);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--kk-accent-text);
+}
+.status { margin: 0; padding: 0; list-style: none; }
+.status li {
+  display: flex;
+  justify-content: space-between;
+  padding-block: var(--kk-space-1);
+  border-top: 1px solid color-mix(in oklab, var(--kk-kakunouko) 25%, var(--kk-rule));
+}
+.status .ok { font-weight: 700; }
+.status .ok::before {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-inline-end: var(--kk-space-2);
+  border-radius: 50%;
+  background: var(--kk-kansei);
+}
+
+/* Kuukou: the departures board, sign yellow on black. */
+.board {
+  background: var(--kk-sign-black);
+  color: var(--kk-sign-yellow);
+  padding: var(--kk-space-2);
+}
+.board table {
+  width: 100%;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0 2px;
+  font-family: var(--kk-font-figures);
+}
+.board th {
+  padding: 0 var(--kk-space-2) var(--kk-space-1);
+  text-align: left;
+  font-family: var(--kk-font-text);
+  font-size: var(--kk-step--2);
+  font-weight: 400;
+  color: color-mix(in oklab, var(--kk-sign-yellow) 70%, var(--kk-sign-black));
+}
+.board td {
+  padding: var(--kk-space-1) var(--kk-space-2);
+  background: color-mix(in oklab, var(--kk-sign-black) 88%, var(--kk-sign-yellow));
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.board td.dim { color: color-mix(in oklab, var(--kk-sign-yellow) 65%, var(--kk-sign-black)); }

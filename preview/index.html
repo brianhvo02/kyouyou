@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Family kit preview</title>
+<script type="module" src="./main.ts"></script>
+</head>
+<body>
+<kk-family-bar current="kuukou"></kk-family-bar>
+
+<header class="masthead">
+  <div class="wrap masthead-row">
+    <div>
+      <h1>Family kit <span class="kk-jp title-jp" lang="ja">拠点空港</span></h1>
+      <p class="lede">The Kyoten Kuukou style kit from kyouyou: the family bar, the tokens, the type and the
+        base controls, with one panel per member in its own accent. Everything on this page comes from
+        <code>src/style</code> and <code>src/family-bar</code>.</p>
+    </div>
+    <fieldset class="theme-switch">
+      <legend>Theme</legend>
+      <label><input type="radio" name="theme" value="os" checked> OS</label>
+      <label><input type="radio" name="theme" value="light"> Light</label>
+      <label><input type="radio" name="theme" value="dark"> Dark</label>
+    </fieldset>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section aria-labelledby="h-panels">
+    <h2 id="h-panels">Each member in its accent</h2>
+    <p class="note">One accent and one signature element per member, on the shared ground, type and controls.</p>
+    <div class="panels">
+
+      <article class="panel accent-kouro">
+        <h3>Kouro <span class="kk-jp" lang="ja">航路</span></h3>
+        <p class="what">Plans the flight</p>
+        <div class="sig fmc">
+          <svg viewBox="0 0 200 56" aria-hidden="true" preserveAspectRatio="none">
+            <polyline class="route" points="8,44 52,30 96,34 142,14 192,20"/>
+            <g class="fix"><path d="M52 26l4 4-4 4-4-4z"/><path d="M96 30l4 4-4 4-4-4z"/><path d="M142 10l4 4-4 4-4-4z"/></g>
+            <g class="apt"><circle cx="8" cy="44" r="3.5"/><circle cx="192" cy="20" r="3.5"/></g>
+          </svg>
+          <dl class="fmc-row kk-figures">
+            <div><dt>From</dt><dd>KSFO</dd></div>
+            <div class="hot"><dt>Cruise</dt><dd>FL410</dd></div>
+            <div class="hot"><dt>Fuel</dt><dd>6,412 lb</dd></div>
+            <div><dt>To</dt><dd>KLAX</dd></div>
+          </dl>
+        </div>
+        <button class="kk-button-primary">Build the plan</button>
+      </article>
+
+      <article class="panel accent-kokuzu">
+        <h3>Kōkūzu <span class="kk-jp" lang="ja">航空図</span></h3>
+        <p class="what">Shows the charts and map</p>
+        <div class="sig chart">
+          <div class="tabs" role="tablist" aria-label="Chart type">
+            <button role="tab" aria-selected="false" tabindex="-1">SID</button>
+            <button role="tab" aria-selected="false" tabindex="-1">STAR</button>
+            <button role="tab" aria-selected="true">APP</button>
+          </div>
+          <p class="chart-name"><span aria-hidden="true">★</span> RNAV (GPS) Y RWY 25L</p>
+          <p class="chart-pin">Pinned for this flight</p>
+        </div>
+        <button class="kk-button-primary">Open the chart</button>
+      </article>
+
+      <article class="panel accent-kansei">
+        <h3>Kansei <span class="kk-jp" lang="ja">管制</span></h3>
+        <p class="what">Talks to you as ATC</p>
+        <div class="sig radio">
+          <p class="station"><span class="tx" aria-hidden="true"></span>SoCal Approach</p>
+          <output class="freq">124.300</output>
+          <p class="said">“Descend and maintain one one thousand.”</p>
+        </div>
+        <button class="kk-button-primary">Hold to talk</button>
+      </article>
+
+      <article class="panel accent-kakunouko">
+        <h3>Kakunouko <span class="kk-jp" lang="ja">格納庫</span></h3>
+        <p class="what">Keeps your data at home</p>
+        <div class="sig hangar">
+          <div class="bay"><output class="cycle">2611</output><span>X-Plane data cycle</span></div>
+          <ul class="status">
+            <li><span>Devices paired</span><span class="kk-figures">3</span></li>
+            <li><span>Sim</span><span class="ok">Connected</span></li>
+          </ul>
+        </div>
+        <button class="kk-button-primary">Pair a device</button>
+      </article>
+
+      <article class="panel accent-kuukou">
+        <h3>Kuukou <span class="kk-jp" lang="ja">拠点空港</span></h3>
+        <p class="what">The family's front door</p>
+        <div class="sig board">
+          <table>
+            <caption class="visually-hidden">Departures</caption>
+            <thead><tr><th scope="col">App</th><th scope="col">Gate</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              <tr><td>KOURO</td><td>K1</td><td>Boarding</td></tr>
+              <tr><td>KOKUZU</td><td>K2</td><td>On time</td></tr>
+              <tr><td>KANSEI</td><td>K3</td><td>On time</td></tr>
+              <tr><td>KAKUNOUKO</td><td>H</td><td class="dim">Home only</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <button class="kk-button-primary">See what's new</button>
+      </article>
+
+    </div>
+  </section>
+
+  <section aria-labelledby="h-bar">
+    <h2 id="h-bar">The family bar</h2>
+    <p class="note">The location sign is the surface you are on; every other member is a direction sign
+      pointing along the row. Under 600&nbsp;px of viewport every bar folds to its location sign, so on a
+      phone each row below shows only that sign.</p>
+
+    <h3>Public mode</h3>
+    <p class="note">Each member's public address. Kakunouko has none, so it appears only on its own pages.</p>
+    <div class="bar-rows" data-bars="public"></div>
+
+    <h3>Home mode</h3>
+    <p class="note">Served by Kakunouko: the apps at <code>../&lt;app&gt;/</code>, Kakunouko at <code>../</code>.</p>
+    <div class="bar-rows" data-bars="home"></div>
+
+    <h3>An unavailable member</h3>
+    <p class="note">The app passes what Kakunouko reports missing; the bar never probes.</p>
+    <div class="bar-rows">
+      <div class="bar-row">
+        <code>current="kouro" mode="home" unavailable="kansei"</code>
+        <kk-family-bar current="kouro" mode="home" unavailable="kansei"></kk-family-bar>
+      </div>
+    </div>
+
+    <h3>Compact, inside an app's own toolbar</h3>
+    <p class="note">Where an app's toolbar fills the top, only the location sign sits in it and opens the others.</p>
+    <div class="toolbar accent-kokuzu" role="toolbar" aria-label="Map toolbar (example)">
+      <kk-family-bar current="kokuzu" compact></kk-family-bar>
+      <input type="search" placeholder="Airport or chart" aria-label="Airport or chart">
+      <button>Layers</button>
+    </div>
+    <div class="toolbar accent-kansei end" role="toolbar" aria-label="Radio toolbar (example)">
+      <span class="toolbar-title">COM 1</span>
+      <output class="kk-figures toolbar-freq">124.300</output>
+      <kk-family-bar current="kansei" compact></kk-family-bar>
+    </div>
+
+    <h3>At 700&nbsp;px</h3>
+    <p class="note">A frame 700&nbsp;px wide, so the bar inside sees a 700&nbsp;px viewport. Between 600 and
+      760&nbsp;px the direction signs drop their kanji to fit.</p>
+    <div class="frame-scroll">
+      <iframe class="frame-700" src="./bar.html" title="The family bar at 700 px" width="700" height="48"></iframe>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-colour">
+    <h2 id="h-colour">Colour</h2>
+    <h3>The palette</h3>
+    <p class="note">Physical colours: the same in both themes, as on the airfield.</p>
+    <ul class="swatches" data-swatches="palette"></ul>
+    <h3>Surfaces</h3>
+    <p class="note">What a surface is painted with; these follow the theme.</p>
+    <ul class="swatches" data-swatches="themed"></ul>
+    <h3>Accents</h3>
+    <p class="note">Each fill with its <code>--kk-on-</code> text, and the accent as text on the ground
+      (<code>--kk-accent-text</code>).</p>
+    <ul class="accents" data-accents></ul>
+  </section>
+
+  <section aria-labelledby="h-type">
+    <h2 id="h-type">Type</h2>
+    <p class="note">B612, drawn by Airbus for cockpit screens; B612 Mono for figures; Mincho for the
+      Japanese names. A 1.2 scale on a 15&nbsp;px body.</p>
+    <ol class="scale" data-scale></ol>
+    <div class="faces">
+      <p><span class="face-name">Text</span> Kōkūzu pins the approach for this flight.</p>
+      <p class="kk-figures"><span class="face-name">Figures</span> 124.300  FL410  6,412 lb  0°/360°</p>
+      <p><span class="face-name">Names</span> <span class="kk-jp" lang="ja">拠点空港 航路 航空図 管制 格納庫</span></p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-controls">
+    <h2 id="h-controls">Controls</h2>
+    <p class="note">Base rules from <code>base.css</code>. The primary button carries the app's accent along its foot.</p>
+    <div class="controls">
+      <div class="control-row">
+        <button>Cancel</button>
+        <button class="kk-button-primary">Save the plan</button>
+        <button disabled>Disabled</button>
+        <button class="is-focus">Focused</button>
+        <a href="#h-controls">A link in the accent</a>
+      </div>
+      <div class="control-row accent-row" data-primaries></div>
+      <div class="fields">
+        <label>Departure <input value="KSFO" autocomplete="off"></label>
+        <label>Arrival <input placeholder="ICAO code" autocomplete="off"></label>
+        <label>Aircraft
+          <select><option>Falcon 8X</option><option>737-800</option></select>
+        </label>
+        <label>Focused <input class="is-focus" value="KLAX" autocomplete="off"></label>
+        <label class="wide">Remarks <textarea placeholder="Anything ATC should know"></textarea></label>
+        <label>Cost index <input type="range" min="0" max="100" value="40"></label>
+        <label class="inline"><input type="checkbox" checked> Use live winds</label>
+        <fieldset>
+          <legend>Fuel units</legend>
+          <label class="inline"><input type="radio" name="units" checked> lb</label>
+          <label class="inline"><input type="radio" name="units"> kg</label>
+        </fieldset>
+      </div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>
