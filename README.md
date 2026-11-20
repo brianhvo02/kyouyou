@@ -7,6 +7,17 @@ The source is plain erasable TypeScript with `.ts` import extensions. The built 
 declarations in `dist/` are committed, and that is what an app imports: nothing is built on install,
 so it works from a plain Node script, under vitest and in a Vite build alike.
 
+## Features
+
+- **Reads X-Plane's navigation files.** `xplane/cifp`, `xplane/aptmeta`, `xplane/airspace`, `xplane/atc`, `xplane/fix`, `xplane/nav`, `xplane/awy`, `xplane/hold`, `xplane/msa` and `xplane/mora` parse the files from a user's own X-Plane folder into plain objects.
+- **Reads the FAA's procedure and airspace data.** `faa/cifp` and `faa/airspace` give SIDs, STARs, approaches, runways and restrictive airspace in the same shape as the X-Plane readers.
+- **Reads and writes X-Plane flight plans.** `fms` parses and writes the v1100 `.fms` format, approach included.
+- **Geometry and magnetic variation.** `geo`, `geo/track`, `geo/polygon` and `geo/magnetic` cover distance, bearing, tracks, polygon tests and the World Magnetic Model.
+- **Weather and winds aloft.** `gfs/*` decodes NOAA GFS winds, `atmosphere` converts altitude and speed, and `wx/upstream` relays airport weather.
+- **A Kuukou server stand-in.** `kuukou/fake-server` and `gfs/fake-gfs` let an app test against made-up servers.
+- **Reads X-Plane live.** `xplane/read` subscribes to datarefs over the web API and reconnects by itself.
+- **Builds `project.json`.** `project` turns a changelog, roadmap and features list into the file the hub dashboard reads.
+
 ## What is in it
 
 | Import | What it is |
