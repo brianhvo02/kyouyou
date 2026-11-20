@@ -236,6 +236,10 @@ describe('parseCifp', () => {
       expect(one({pt: 'HM', proc: 'P1', dist: '0040'})).toMatchObject({holdTimeMin: null, routeDistanceNm: 4});
     });
 
+    test('the centre fix column counts as an arc centre only on RF legs', () => {
+      expect(one({row: 'APPCH', type: 'R', proc: 'R09XY', fix: 'FAFFF', pt: 'TF', centre: 'RW09', centreRegion: 'K2'}).arcCentre).toBeNull();
+    });
+
     test('a straight leg has every geometry field null', () => {
       expect(one({proc: 'P1', fix: 'AAAAA'})).toMatchObject({
         turnDirection: null, recommendedNavaid: null, arcCentre: null, arcRadiusNm: null, thetaDeg: null, rhoNm: null,

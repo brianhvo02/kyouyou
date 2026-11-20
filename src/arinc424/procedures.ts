@@ -57,7 +57,8 @@ export function makeLeg(f: LegFields): CifpLeg {
     routeDistanceNm: scaled(f.distance, /^\d{4}$/, 10),
     holdTimeMin: /^T\d{3}$/.test(f.distance) ? Number(f.distance.slice(1)) / 10 : null,
     verticalAngleDeg: scaled(f.verticalAngle, /^-?\d{3,4}$/, 100),
-    arcCentre: f.centre === '' ? null : {ident: f.centre, region: f.centreRegion},
+    // The same column carries other references on other legs (runways, procedure-turn markers).
+    arcCentre: f.pathTerm !== 'RF' || f.centre === '' ? null : {ident: f.centre, region: f.centreRegion},
   };
 }
 

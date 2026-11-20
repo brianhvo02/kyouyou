@@ -54,7 +54,7 @@ export interface CifpLeg {
   holdTimeMin: number | null;
   /** The vertical (glide path) angle, degrees, e.g. -3. */
   verticalAngleDeg: number | null;
-  /** RF legs: the arc centre fix, by ident and ICAO region. */
+  /** RF legs only: the arc centre fix, by ident and ICAO region (null on every other leg). */
   arcCentre: {ident: string; region: string} | null;
 }
 
