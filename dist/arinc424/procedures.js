@@ -16,7 +16,20 @@ export function makeLeg(f) {
         role: roleOf(d[3] ?? ' '),
         flyOver: d[1] === 'Y',
         missed: false,
+        turnDirection: /^[LRE]$/.test(f.turn) ? f.turn : null,
+        recommendedNavaid: f.navaid === '' ? null : { ident: f.navaid, region: f.navaidRegion },
+        arcRadiusNm: scaled(f.arcRadius, /^\d{6}$/, 1000),
+        thetaDeg: scaled(f.theta, /^\d{4}$/, 10),
+        rhoNm: scaled(f.rho, /^\d{4}$/, 10),
+        routeDistanceNm: scaled(f.distance, /^\d{4}$/, 10),
+        holdTimeMin: /^T\d{3}$/.test(f.distance) ? Number(f.distance.slice(1)) / 10 : null,
+        verticalAngleDeg: scaled(f.verticalAngle, /^-?\d{3,4}$/, 100),
+        arcCentre: f.centre === '' ? null : { ident: f.centre, region: f.centreRegion },
     };
+}
+/** A fixed-point number as written, or null when it doesn't match. */
+function scaled(s, pattern, divisor) {
+    return pattern.test(s) ? Number(s) / divisor : null;
 }
 export function procedureCollector() {
     const procs = new Map();

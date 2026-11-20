@@ -98,6 +98,16 @@ export function parseFaaCifp(lines: Iterable<string>): FaaCifp {
       alt2: col(90, 94).trim(),
       course: col(71, 74).trim(),
       speed: col(100, 102).trim(),
+      turn: col(44).trim(),
+      navaid: col(51, 54).trim(),
+      navaidRegion: col(55, 56).trim(),
+      arcRadius: col(57, 62).trim(),
+      theta: col(63, 66).trim(),
+      rho: col(67, 70).trim(),
+      distance: col(75, 78).trim(),
+      verticalAngle: col(103, 106).trim(),
+      centre: col(107, 111).trim(),
+      centreRegion: col(113, 114).trim(),
     });
     a.procedures.add(kind, name, col(20).trim(), col(21, 25).trim(), leg);
   }

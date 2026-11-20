@@ -38,6 +38,24 @@ export interface CifpLeg {
   flyOver: boolean;
   /** Approaches: true from the first leg whose descriptor position 3 is 'M' to the end of the route. */
   missed: boolean;
+  /** Turn direction as written (L, R, or E for either), or null. RF and AF legs and holds carry one. */
+  turnDirection: 'L' | 'R' | 'E' | null;
+  /** The recommended navaid, by ident and ICAO region (AF legs, and legs that end at a DME or radial). */
+  recommendedNavaid: {ident: string; region: string} | null;
+  /** RF legs: the arc radius, NM. */
+  arcRadiusNm: number | null;
+  /** Magnetic bearing from the recommended navaid, degrees. */
+  thetaDeg: number | null;
+  /** Distance from the recommended navaid, NM. */
+  rhoNm: number | null;
+  /** The route distance as written (leg or arc length, DME distance, or holding leg length), NM. */
+  routeDistanceNm: number | null;
+  /** Holds written with a time instead of a distance, minutes. Never set together with routeDistanceNm. */
+  holdTimeMin: number | null;
+  /** The vertical (glide path) angle, degrees, e.g. -3. */
+  verticalAngleDeg: number | null;
+  /** RF legs: the arc centre fix, by ident and ICAO region. */
+  arcCentre: {ident: string; region: string} | null;
 }
 
 export interface CifpRoute {
@@ -139,6 +157,16 @@ export function parseCifp(text: string): CifpAirport {
       alt2: f[24] ?? '',
       course: f[20] ?? '',
       speed: f[27] ?? '',
+      turn: f[9] ?? '',
+      navaid: f[13] ?? '',
+      navaidRegion: f[14] ?? '',
+      arcRadius: f[17] ?? '',
+      theta: f[18] ?? '',
+      rho: f[19] ?? '',
+      distance: f[21] ?? '',
+      verticalAngle: f[28] ?? '',
+      centre: f[30] ?? '',
+      centreRegion: f[31] ?? '',
     });
     procedures.add(kind, name, f[1] ?? '', f[3] ?? '', leg);
   });

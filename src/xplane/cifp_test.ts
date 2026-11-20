@@ -5,6 +5,8 @@ import {parseCifp} from './cifp.ts';
 interface L {
   row?: string; seq?: string; type?: string; proc: string; trans?: string; fix?: string; region?: string;
   desc?: string; pt?: string; course?: string; altDesc?: string; alt1?: string; alt2?: string; ta?: string; speed?: string;
+  turn?: string; navaid?: string; navRegion?: string; arcRadius?: string; theta?: string; rho?: string; dist?: string;
+  va?: string; centre?: string; centreRegion?: string;
 }
 function leg(l: L): string {
   const f = new Array<string>(36).fill(' ');
@@ -17,7 +19,17 @@ function leg(l: L): string {
   f[6] = 'P';
   f[7] = 'C';
   f[8] = l.desc ?? 'E   ';
+  f[9] = l.turn ?? ' ';
   f[11] = l.pt ?? 'TF';
+  f[13] = l.navaid ?? ' ';
+  f[14] = l.navRegion ?? ' ';
+  f[17] = l.arcRadius ?? '      ';
+  f[18] = l.theta ?? '    ';
+  f[19] = l.rho ?? '    ';
+  f[21] = l.dist ?? '    ';
+  f[28] = l.va ?? '    ';
+  f[30] = l.centre ?? ' ';
+  f[31] = l.centreRegion ?? ' ';
   f[20] = l.course ?? '    ';
   f[22] = l.altDesc ?? ' ';
   f[23] = l.alt1 ?? '     ';
@@ -204,5 +216,39 @@ describe('parseCifp', () => {
       {line: 2, reason: 'malformed SID row'},
       {line: 3, reason: 'no row code'},
     ]);
+  });
+
+  describe('leg geometry', () => {
+    const one = (l: L) => parseCifp(leg(l)).procedures[0]!.routes[0]!.legs[0]!;
+
+    test('an RF leg gives its turn, arc centre, arc radius, arc length and vertical angle', () => {
+      const g = one({row: 'APPCH', type: 'R', proc: 'R09XY', fix: 'ABCDE', pt: 'RF', turn: 'L', arcRadius: '002500', dist: '0031', va: '-300', centre: 'CTRAA', centreRegion: 'K2'});
+      expect(g).toMatchObject({turnDirection: 'L', arcCentre: {ident: 'CTRAA', region: 'K2'}, arcRadiusNm: 2.5, routeDistanceNm: 3.1, holdTimeMin: null, verticalAngleDeg: -3});
+    });
+
+    test('an AF leg gives its recommended navaid, theta and rho', () => {
+      const g = one({row: 'APPCH', type: 'A', proc: 'D27Z', fix: 'ARCAA', pt: 'AF', turn: 'R', navaid: 'XYZ', navRegion: 'K7', theta: '3008', rho: '0120', course: '2630'});
+      expect(g).toMatchObject({turnDirection: 'R', recommendedNavaid: {ident: 'XYZ', region: 'K7'}, thetaDeg: 300.8, rhoNm: 12, courseDeg: 263});
+    });
+
+    test('a hold gives its time when written with T, else its distance', () => {
+      expect(one({pt: 'HM', proc: 'P1', dist: 'T015'})).toMatchObject({holdTimeMin: 1.5, routeDistanceNm: null});
+      expect(one({pt: 'HM', proc: 'P1', dist: '0040'})).toMatchObject({holdTimeMin: null, routeDistanceNm: 4});
+    });
+
+    test('a straight leg has every geometry field null', () => {
+      expect(one({proc: 'P1', fix: 'AAAAA'})).toMatchObject({
+        turnDirection: null, recommendedNavaid: null, arcCentre: null, arcRadiusNm: null, thetaDeg: null, rhoNm: null,
+        routeDistanceNm: null, holdTimeMin: null, verticalAngleDeg: null,
+      });
+    });
+
+    test('malformed geometry values read as null and the leg is kept', () => {
+      const a = parseCifp(leg({proc: 'P1', fix: 'AAAAA', turn: 'X', arcRadius: '2.5', theta: '30A8', rho: '12', dist: 'TXYZ', va: '-3.0'}));
+      expect(a.skipped).toEqual([]);
+      expect(a.procedures[0]!.routes[0]!.legs[0]).toMatchObject({
+        turnDirection: null, arcRadiusNm: null, thetaDeg: null, rhoNm: null, routeDistanceNm: null, holdTimeMin: null, verticalAngleDeg: null,
+      });
+    });
   });
 });

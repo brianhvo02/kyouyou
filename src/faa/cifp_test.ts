@@ -15,6 +15,8 @@ function record(fields: Readonly<Record<number, string>>): string {
 interface Leg {
   airport?: string; sub?: 'D' | 'E' | 'F'; proc: string; type?: string; trans?: string; seq?: string; fix?: string; region?: string;
   cont?: string; desc?: string; pt?: string; course?: string; altDesc?: string; alt1?: string; alt2?: string; ta?: string; speed?: string;
+  turn?: string; navaid?: string; navRegion?: string; arcRadius?: string; theta?: string; rho?: string; dist?: string;
+  va?: string; centre?: string; centreRegion?: string;
 }
 const leg = (l: Leg): string =>
   record({
@@ -22,6 +24,8 @@ const leg = (l: Leg): string =>
     14: l.proc, 20: l.type ?? '1', 21: l.trans ?? '', 27: l.seq ?? '010', 30: l.fix ?? '', 35: l.region ?? 'K2',
     39: l.cont ?? '0', 40: l.desc ?? 'E   ', 48: l.pt ?? 'TF', 71: l.course ?? '', 83: l.altDesc ?? ' ',
     85: l.alt1 ?? '', 90: l.alt2 ?? '', 95: l.ta ?? '', 100: l.speed ?? '', 124: '12345', 129: '2611',
+    44: l.turn ?? ' ', 51: l.navaid ?? '', 55: l.navRegion ?? '', 57: l.arcRadius ?? '', 63: l.theta ?? '', 67: l.rho ?? '',
+    75: l.dist ?? '', 103: l.va ?? '', 107: l.centre ?? '', 113: l.centreRegion ?? '',
   });
 const runway = (id: string, lat: string, lon: string, elev: string, airport = 'KTST'): string =>
   record({1: 'S', 2: 'USA', 5: 'P', 7: airport, 11: 'K2', 13: 'G', 14: id, 22: '0', 23: '09000', 28: '0710', 33: lat, 42: lon, 67: elev});
@@ -53,6 +57,8 @@ describe('parseFaaCifp', () => {
     expect(a.procedures[0]!.routes[0]!.legs[0]).toEqual({
       seq: 30, fix: 'PORTE', region: 'K2', pathTerm: 'DF', alt: {kind: 'at-or-below', ft: 10000}, speedKt: null,
       courseDeg: 280.5, courseTrue: false, descriptor: 'E   ', role: null, flyOver: false, missed: false,
+      turnDirection: null, recommendedNavaid: null, arcRadiusNm: null, thetaDeg: null, rhoNm: null,
+      routeDistanceNm: null, holdTimeMin: null, verticalAngleDeg: null, arcCentre: null,
     });
     expect(a.transitionAltitudeFt).toBe(18000);
   });
@@ -213,6 +219,18 @@ describe('parseFaaCifp', () => {
   test('an airport record alone does not add an airport', () => {
     const r = parse([airportRecord('KONE', '18000')]);
     expect(r.airports.size).toBe(0);
+  });
+
+  test('reads leg geometry at its ARINC 424 columns', () => {
+    const a = only([
+      leg({sub: 'F', proc: 'R09XY', type: 'R', seq: '010', fix: 'ABCDE', pt: 'RF', turn: 'L', arcRadius: '002500', dist: '0031', va: '-300', centre: 'CTRAA', centreRegion: 'K2'}),
+      leg({sub: 'F', proc: 'R09XY', type: 'R', seq: '020', fix: 'ARCAA', pt: 'AF', turn: 'R', navaid: 'XYZ', navRegion: 'K7', theta: '3008', rho: '0120'}),
+      leg({sub: 'F', proc: 'R09XY', type: 'R', seq: '030', fix: 'HOLDD', pt: 'HM', dist: 'T010'}),
+    ]);
+    const [rf, af, hm] = a.procedures[0]!.routes[0]!.legs;
+    expect(rf).toMatchObject({turnDirection: 'L', arcCentre: {ident: 'CTRAA', region: 'K2'}, arcRadiusNm: 2.5, routeDistanceNm: 3.1, verticalAngleDeg: -3, recommendedNavaid: null});
+    expect(af).toMatchObject({turnDirection: 'R', recommendedNavaid: {ident: 'XYZ', region: 'K7'}, thetaDeg: 300.8, rhoNm: 12, arcCentre: null});
+    expect(hm).toMatchObject({holdTimeMin: 1, routeDistanceNm: null, turnDirection: null});
   });
 });
 

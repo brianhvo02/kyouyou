@@ -12,6 +12,21 @@ export interface LegFields {
     /** Magnetic course in tenths of a degree. */
     course: string;
     speed: string;
+    /** Turn direction, as written: L, R or E. */
+    turn: string;
+    navaid: string;
+    navaidRegion: string;
+    /** Arc radius in thousandths of a NM. */
+    arcRadius: string;
+    /** Theta and rho in tenths. */
+    theta: string;
+    rho: string;
+    /** Route or holding distance in tenths of a NM, or `T` and holding time in tenths of a minute. */
+    distance: string;
+    /** Vertical angle in signed hundredths of a degree. */
+    verticalAngle: string;
+    centre: string;
+    centreRegion: string;
 }
 export declare function makeLeg(f: LegFields): CifpLeg;
 export interface ProcedureCollector {

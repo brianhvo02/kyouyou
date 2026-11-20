@@ -64,6 +64,16 @@ export function parseCifp(text) {
             alt2: f[24] ?? '',
             course: f[20] ?? '',
             speed: f[27] ?? '',
+            turn: f[9] ?? '',
+            navaid: f[13] ?? '',
+            navaidRegion: f[14] ?? '',
+            arcRadius: f[17] ?? '',
+            theta: f[18] ?? '',
+            rho: f[19] ?? '',
+            distance: f[21] ?? '',
+            verticalAngle: f[28] ?? '',
+            centre: f[30] ?? '',
+            centreRegion: f[31] ?? '',
         });
         procedures.add(kind, name, f[1] ?? '', f[3] ?? '', leg);
     });

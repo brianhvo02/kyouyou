@@ -26,6 +26,30 @@ export interface CifpLeg {
     flyOver: boolean;
     /** Approaches: true from the first leg whose descriptor position 3 is 'M' to the end of the route. */
     missed: boolean;
+    /** Turn direction as written (L, R, or E for either), or null. RF and AF legs and holds carry one. */
+    turnDirection: 'L' | 'R' | 'E' | null;
+    /** The recommended navaid, by ident and ICAO region (AF legs, and legs that end at a DME or radial). */
+    recommendedNavaid: {
+        ident: string;
+        region: string;
+    } | null;
+    /** RF legs: the arc radius, NM. */
+    arcRadiusNm: number | null;
+    /** Magnetic bearing from the recommended navaid, degrees. */
+    thetaDeg: number | null;
+    /** Distance from the recommended navaid, NM. */
+    rhoNm: number | null;
+    /** The route distance as written (leg or arc length, DME distance, or holding leg length), NM. */
+    routeDistanceNm: number | null;
+    /** Holds written with a time instead of a distance, minutes. Never set together with routeDistanceNm. */
+    holdTimeMin: number | null;
+    /** The vertical (glide path) angle, degrees, e.g. -3. */
+    verticalAngleDeg: number | null;
+    /** RF legs: the arc centre fix, by ident and ICAO region. */
+    arcCentre: {
+        ident: string;
+        region: string;
+    } | null;
 }
 export interface CifpRoute {
     name: string;
