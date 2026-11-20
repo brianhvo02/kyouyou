@@ -36,6 +36,7 @@ so it works from a plain Node script, under vitest and in a Vite build alike.
 | `kyouyou/kuukou/fake-server` | A stand-in Kuukou server for apps' tests (needs Node): server check, folder manifests, files with Range, from made-up files |
 | `kyouyou/faa/cifp` | The FAA's CIFP file (`FAACIFP18`, ARINC 424-18): `parseFaaCifp` reads every airport's SIDs, STARs, approaches and runways into the same shape as `kyouyou/xplane/cifp`, from lines a caller may stream |
 | `kyouyou/faa/airspace` | Restrictive airspace in ARINC 424-18 (`UR` records, as in the FAA's `FAACIFP18`): `parseRestrictiveAirspace` reads restricted, prohibited and other special-use areas, with arcs and circles turned into points no more than 1 NM apart, into the same shape as `kyouyou/xplane/airspace` (so `airspacesAt` works on both), plus designation, region, multiple code, time code, NOTAM flag and the limits as written |
+| `kyouyou/project` | The hub dashboard's `project.json` (schema 1): `buildProjectJson` turns an app's `CHANGELOG.md`, `ROADMAP.md` and README `## Features` list into one object (version, release date, every changelog entry, unreleased changes, roadmap, features), and refuses text that holds a local path or a login@machine; `parseChangelog`, `parseRoadmap` and `parseFeatures` read the sources alone. No dependencies |
 
 No app data lives here: no Jeppesen, Navigraph or X-Plane files, and nothing converted from one.
 

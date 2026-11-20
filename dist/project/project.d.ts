@@ -1,0 +1,54 @@
+export type ProjectId = 'kouro' | 'kokuzu' | 'kansei' | 'kyouyou';
+export interface ChangeSet {
+    added: string[];
+    changed: string[];
+    fixed: string[];
+    removed: string[];
+}
+export interface ProjectJson {
+    schema: 1;
+    id: ProjectId;
+    name: string;
+    summary: string;
+    url: string;
+    version: string;
+    released: string;
+    changelog: Array<ChangeSet & {
+        version: string;
+        date: string;
+    }>;
+    unreleased: ChangeSet;
+    roadmap: {
+        now: string[];
+        next: string[];
+        later: string[];
+        notPlanned: string[];
+    };
+    features: Array<{
+        summary: string;
+        detail: string;
+    }>;
+}
+export interface ProjectMeta {
+    id: ProjectId;
+    name: string;
+    summary: string;
+    url: string;
+}
+export declare class ProjectSourceError extends Error {
+    constructor(message: string);
+}
+export declare function parseChangelog(md: string): {
+    unreleased: ChangeSet;
+    versions: Array<ChangeSet & {
+        version: string;
+        date: string;
+    }>;
+};
+export declare function parseRoadmap(md: string): ProjectJson['roadmap'];
+export declare function parseFeatures(readme: string): ProjectJson['features'];
+export declare function buildProjectJson(meta: ProjectMeta, version: string, sources: {
+    changelog: string;
+    roadmap: string;
+    readme: string;
+}): ProjectJson;

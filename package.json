@@ -108,6 +108,10 @@
     "./faa/airspace": {
       "types": "./dist/faa/airspace.d.ts",
       "default": "./dist/faa/airspace.js"
+    },
+    "./project": {
+      "types": "./dist/project/project.d.ts",
+      "default": "./dist/project/project.js"
     }
   },
   "files": [
