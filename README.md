@@ -51,7 +51,7 @@ so it works from a plain Node script, under vitest and in a Vite build alike.
 | `kyouyou/faa/cifp` | The FAA's CIFP file (`FAACIFP18`, ARINC 424-18): `parseFaaCifp` reads every airport's SIDs, STARs, approaches and runways into the same shape as `kyouyou/xplane/cifp`, from lines a caller may stream |
 | `kyouyou/faa/airspace` | Restrictive airspace in ARINC 424-18 (`UR` records, as in the FAA's `FAACIFP18`): `parseRestrictiveAirspace` reads restricted, prohibited and other special-use areas, with arcs and circles turned into points no more than 1 NM apart, into the same shape as `kyouyou/xplane/airspace` (so `airspacesAt` works on both), plus designation, region, multiple code, time code, NOTAM flag and the limits as written |
 | `kyouyou/project` | The hub dashboard's `project.json` (schema 1): `buildProjectJson` turns an app's `CHANGELOG.md`, `ROADMAP.md` and README `## Features` list into one object (version, release date, every changelog entry, unreleased changes, roadmap, features), and refuses text that holds a local path (`/Users/`, `/home/`, `~/`, `C:\`, not inside a URL) or a `login@machine`; `projectJsonPlugin` also defines `__PROJECT_VERSION__` (the package.json version) for the app, declared with `declare const __PROJECT_VERSION__: string`; `parseChangelog`, `parseRoadmap` and `parseFeatures` read the sources alone. No dependencies |
-| `kyouyou/style/tokens.css` | The family's design tokens as `--kk-` custom properties: chart paper, chart ink, rules, sign yellow and black; the five accents (`--kk-kuukou`, `--kk-kouro`, `--kk-kokuzu`, `--kk-kansei`, `--kk-kakunouko`) with `--kk-on-<app>` for text on each; `--kk-accent`, `--kk-accent-text` (contrast-safe text in the accent's hue) and `--kk-on-accent`; `--kk-font-text`, `--kk-font-figures`, `--kk-font-jp`; the type scale `--kk-step--2` to `--kk-step-4`; spacing, radii, focus ring and `--kk-bar-height`. Dark under `prefers-color-scheme` unless the root has `data-theme="light"`, and whenever it has `data-theme="dark"`; reads no storage |
+| `kyouyou/style/tokens.css` | The family's design tokens as `--kk-` custom properties: chart paper, chart ink, rules, sign yellow and black; the five accents (`--kk-kuukou`, `--kk-kouro`, `--kk-kokuzu`, `--kk-kansei`, `--kk-kakunouko`) with `--kk-on-<app>` for text on each; `--kk-accent`, `--kk-accent-text` (contrast-safe text in the accent's hue) and `--kk-on-accent`; `--kk-font-text`, `--kk-font-figures`, `--kk-font-jp`; the type scale `--kk-step--2` to `--kk-step-4`; spacing, radii, focus ring and `--kk-bar-height`; `data-kk-accent="<member>"` puts part of a page in another accent. Dark under `prefers-color-scheme` unless the root has `data-theme="light"`, and whenever it has `data-theme="dark"`; reads no storage |
 | `kyouyou/style/fonts.css` | `@font-face` rules for `KK B612` and `KK B612 Mono` (400, 700) and `KK Mincho` (Noto Serif JP cut to the family's kanji), loaded by relative URL from `style/fonts/` so the app's bundler copies them; OFL texts beside the files |
 | `kyouyou/style/base.css` | Opt-in base rules at zero specificity: body type, headings, Japanese names (`.kk-jp`, with `lang="ja"` on the element), figures, links, buttons (`.kk-button`, `.kk-button-primary`), inputs, the focus ring, reduced motion |
 | `kyouyou/style/fonts/*` | The font files and their licences |
@@ -79,6 +79,20 @@ URLs are relative, so a bundler that cannot load them fails the build rather tha
 Set `--kk-accent` on `:root` (where `--kk-accent-text` is worked out). An app that fills a control
 with its accent also sets `--kk-on-accent: var(--kk-on-kouro)`. Sign yellow is for signs and the
 focus ring, never for text on the ground; use `--kk-accent-text` for text.
+
+A part of a page in another member's accent (the dashboard's cards, a preview) marks itself with
+`data-kk-accent`:
+
+```html
+<article data-kk-accent="kokuzu">…</article>
+```
+
+`data-kk-accent="<member>"` sets `--kk-accent` and `--kk-on-accent` to that member's, and on any
+element that carries the attribute `--kk-accent-text` is worked out again from its own accent (a bare
+`data-kk-accent` does only that, for an accent set in the element's own CSS). Without the attribute a
+nested `--kk-accent` would still show the root's accent text, because a custom property is worked out
+where it is declared. The rules have zero specificity, so an app's own rules win. Keep setting the
+app's own accent on `:root` as above.
 
 ### The family bar
 

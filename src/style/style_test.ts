@@ -95,6 +95,37 @@ describe('tokens.css', () => {
     expect(jp.indexOf("'Yu Mincho'")).toBeLessThan(jp.indexOf("'KK Mincho'"));
     expect(jp).toMatch(/'KK Mincho', serif$/);
   });
+
+  describe('nested accents', () => {
+    const LIGHT_TEXT = 'oklch(from var(--kk-accent) min(l, 0.5) c h)';
+    const DARK_TEXT = 'oklch(from var(--kk-accent) max(l, 0.75) c h)';
+
+    test('works out accent text again wherever data-kk-accent sets the accent, in each theme', () => {
+      expect(light().get('--kk-accent-text')).toBe(LIGHT_TEXT);
+      expect(block(tokens(), ':where([data-kk-accent])').get('--kk-accent-text')).toBe(LIGHT_TEXT);
+      expect(block(tokens(), ':where(:root:not([data-theme="light"]) [data-kk-accent])').get('--kk-accent-text')).toBe(DARK_TEXT);
+      expect(block(tokens(), ':where(:root[data-theme="dark"] [data-kk-accent])').get('--kk-accent-text')).toBe(DARK_TEXT);
+      expect(tokens()).toMatch(
+        /@media \(prefers-color-scheme: dark\) \{\s*:where\(:root:not\(\[data-theme="light"\]\) \[data-kk-accent\]\) \{/,
+      );
+    });
+
+    test('puts the dark rules after the light one, so they win at the same (zero) specificity', () => {
+      const css = tokens().replace(/\/\*[\s\S]*?\*\//g, '');
+      const lightAt = css.indexOf(':where([data-kk-accent]) {');
+      expect(lightAt).toBeGreaterThan(0);
+      expect(css.indexOf(':where(:root:not([data-theme="light"]) [data-kk-accent]) {')).toBeGreaterThan(lightAt);
+      expect(css.indexOf(':where(:root[data-theme="dark"] [data-kk-accent]) {')).toBeGreaterThan(lightAt);
+    });
+
+    test('names each member as an accent: data-kk-accent="kouro" and the rest', () => {
+      for (const a of ACCENTS) {
+        const b = block(tokens(), `:where([data-kk-accent="${a}"])`);
+        expect.soft(b.get('--kk-accent'), a).toBe(`var(--kk-${a})`);
+        expect.soft(b.get('--kk-on-accent'), a).toBe(`var(--kk-on-${a})`);
+      }
+    });
+  });
 });
 
 // ---- contrast -------------------------------------------------------------------------------
@@ -222,6 +253,17 @@ describe('base.css', () => {
     const mincho = rules().filter((r) => r.body.includes('--kk-font-jp'));
     expect(mincho.map((r) => r.selector)).toEqual([':where(.kk-jp)']);
     expect(read('base.css')).not.toMatch(/:lang\(|\[lang/);
+  });
+
+  test('sets form fields at the body weight, after the rule that makes them inherit the font', () => {
+    const all = rules();
+    const inherit = all.findIndex((r) => /font:\s*inherit/.test(r.body));
+    const weight = all.findIndex((r) => /font-weight:\s*400/.test(r.body)
+      && ['input', 'select', 'textarea'].every((tag) => new RegExp(`\\b${tag}\\b`).test(r.selector)));
+    expect(inherit).toBeGreaterThanOrEqual(0);
+    expect(weight, 'a rule giving input, select and textarea font-weight: 400').toBeGreaterThan(inherit);
+    // Buttons keep their bold.
+    expect(all[weight]!.selector).not.toMatch(/\bbutton\b/);
   });
 });
 

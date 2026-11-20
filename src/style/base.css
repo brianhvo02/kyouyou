@@ -107,6 +107,10 @@
   font: inherit;
   color: inherit;
 }
+/* Fields sit at the body weight even inside a bold label; buttons keep their own bold. */
+:where(input, select, textarea) {
+  font-weight: 400;
+}
 
 :where(button, .kk-button) {
   display: inline-flex;

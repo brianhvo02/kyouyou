@@ -6,7 +6,8 @@
    --kk-accent-text follows by itself: the accent's own hue and chroma at a lightness that reads as
    text on the ground and on surfaces (at most 0.5 in light, at least 0.75 in dark, in OKLCH).
    Browsers without relative colours drop it, and such text takes the ink colour instead. An app that fills a control with its accent also sets
-   --kk-on-accent: var(--kk-on-kouro) for the text on that fill.
+   --kk-on-accent: var(--kk-on-kouro) for the text on that fill. A part of a page in another member's
+   accent says so with data-kk-accent="kokuzu" (see the end of this file).
 
    Themes: light by default; dark under prefers-color-scheme, unless the root says
    data-theme="light"; and dark whenever the root says data-theme="dark". The kit reads no storage.
@@ -107,3 +108,28 @@
   --kk-rule-strong: #6c7e8c;
   --kk-accent-text: oklch(from var(--kk-accent) max(l, 0.75) c h);
 }
+
+/* Accents on part of a page. --kk-accent-text is worked out where it is declared, so an element
+   that sets its own accent carries data-kk-accent and gets the text colour worked out again there.
+   data-kk-accent="kouro" (or any member) also sets the accent and its on-colour; a bare
+   data-kk-accent keeps an accent set in the element's own CSS. Zero specificity: an app's rules win.
+   The root takes its accent from the one line on :root above, not from this attribute. */
+:where([data-kk-accent]) {
+  --kk-accent-text: oklch(from var(--kk-accent) min(l, 0.5) c h);
+}
+
+@media (prefers-color-scheme: dark) {
+  :where(:root:not([data-theme="light"]) [data-kk-accent]) {
+    --kk-accent-text: oklch(from var(--kk-accent) max(l, 0.75) c h);
+  }
+}
+
+:where(:root[data-theme="dark"] [data-kk-accent]) {
+  --kk-accent-text: oklch(from var(--kk-accent) max(l, 0.75) c h);
+}
+
+:where([data-kk-accent="kuukou"]) { --kk-accent: var(--kk-kuukou); --kk-on-accent: var(--kk-on-kuukou); }
+:where([data-kk-accent="kouro"]) { --kk-accent: var(--kk-kouro); --kk-on-accent: var(--kk-on-kouro); }
+:where([data-kk-accent="kokuzu"]) { --kk-accent: var(--kk-kokuzu); --kk-on-accent: var(--kk-on-kokuzu); }
+:where([data-kk-accent="kansei"]) { --kk-accent: var(--kk-kansei); --kk-on-accent: var(--kk-on-kansei); }
+:where([data-kk-accent="kakunouko"]) { --kk-accent: var(--kk-kakunouko); --kk-on-accent: var(--kk-on-kakunouko); }
