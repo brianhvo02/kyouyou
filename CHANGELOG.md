@@ -6,6 +6,8 @@ All notable changes to kyouyou (共有) are recorded here, newest first. The for
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-20
+
 ### Added
 
 - `style/tokens.css`, `style/fonts.css`, `style/base.css`: the family style kit: `--kk-` tokens (palette, five accents, type, spacing, radii, focus ring, bar height) in light and dark, self-hosted B612, B612 Mono and a Noto Serif JP subset of the family's kanji, `data-kk-accent` for parts of a page in another member's accent, and opt-in base rules.
