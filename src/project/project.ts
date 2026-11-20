@@ -87,15 +87,13 @@ export function parseChangelog(md: string): {unreleased: ChangeSet; versions: Ar
   let unreleased = emptyChangeSet();
   const versions: Array<ChangeSet & {version: string; date: string}> = [];
   for (const sec of sections(splitLines(md), '## ')) {
-    if (sec.heading.startsWith('[')) {
-      if (/^\[unreleased\]$/i.test(sec.heading)) {
-        unreleased = changeSet(sec.lines);
-        continue;
-      }
-      const m = VERSION_HEADING.exec(sec.heading);
-      if (!m) throw new ProjectSourceError(`Malformed changelog heading: "## ${sec.heading}" (expected "## [x.y.z] - YYYY-MM-DD")`);
-      versions.push({version: m[1] ?? '', date: m[2] ?? '', ...changeSet(sec.lines)});
+    if (/^\[unreleased\]$/i.test(sec.heading)) {
+      unreleased = changeSet(sec.lines);
+      continue;
     }
+    const m = VERSION_HEADING.exec(sec.heading);
+    if (!m) throw new ProjectSourceError(`Malformed changelog heading: "## ${sec.heading}" (expected "## [x.y.z] - YYYY-MM-DD")`);
+    versions.push({version: m[1] ?? '', date: m[2] ?? '', ...changeSet(sec.lines)});
   }
   return {unreleased, versions};
 }
@@ -128,7 +126,7 @@ export function parseFeatures(readme: string): ProjectJson['features'] {
 const PRIVATE: Array<[RegExp, string]> = [
   [/\/(?:Users|home)\/\S/, 'a local path'],
   [/(?:^|[^A-Za-z])[A-Za-z]:\\/, 'a Windows path'],
-  [/(?:^|[\s(`])~\//, 'a home-folder path'],
+  [/~\//, 'a home-folder path'],
   [/[^\s@<>]+@[^\s@<>]+/, 'an address or login@machine'],
 ];
 

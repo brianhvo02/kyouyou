@@ -100,6 +100,8 @@ describe('parseChangelog', () => {
   it('throws on a malformed version heading', () => {
     expect(() => parseChangelog('## [0.1] - 2026-11-19\n')).toThrow(ProjectSourceError);
     expect(() => parseChangelog('## [0.1.0] - 19/11/2026\n')).toThrow(ProjectSourceError);
+    expect(() => parseChangelog('## 0.2.0 - 2026-11-20\n')).toThrow(ProjectSourceError);
+    expect(() => parseChangelog('## Notes\n')).toThrow(ProjectSourceError);
   });
 });
 
@@ -144,7 +146,7 @@ describe('buildProjectJson', () => {
     expect(() => buildProjectJson(META, '9.9.9', sources)).toThrow(ProjectSourceError);
   });
 
-  it.each(['/Users/someone/x', 'C:\\x', '~/x', 'me@my-pc'])('throws for private detail %s', (bad) => {
+  it.each(['/Users/someone/x', 'C:\\x', '~/x', '=~/x', '"~/x', 'me@my-pc'])('throws for private detail %s', (bad) => {
     const changelog = CHANGELOG.replace('- Another one.', `- Saw ${bad} here.`);
     expect(() => buildProjectJson(META, '0.2.0', { ...sources, changelog })).toThrow(ProjectSourceError);
     const roadmap = ROADMAP.replace('- Do this.', `- ${bad}`);
