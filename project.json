@@ -150,7 +150,9 @@
     }
   ],
   "unreleased": {
-    "added": [],
+    "added": [
+      "`wx/upstream`: `relayHazards` (with `hazardsUpstream` and `HAZARDS_PATH`), the weather-hazards relay: `?kind=sigmet|isigmet|gairmet` answers with NOAA's GeoJSON FeatureCollection, forwarding only the kind; callers cache it for 300 s."
+    ],
     "changed": [],
     "fixed": [],
     "removed": []
@@ -190,7 +192,7 @@
     },
     {
       "summary": "Weather and winds aloft.",
-      "detail": "`gfs/*` decodes NOAA GFS winds, `atmosphere` converts altitude and speed, and `wx/upstream` relays airport weather."
+      "detail": "`gfs/*` decodes NOAA GFS winds, `atmosphere` converts altitude and speed, and `wx/upstream` relays airport weather and weather hazards."
     },
     {
       "summary": "A Kuukou server stand-in.",
