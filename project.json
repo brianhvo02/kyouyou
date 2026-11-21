@@ -4,9 +4,19 @@
   "name": "Kyōyū (共有)",
   "summary": "Code shared by the Kyoten Kūkō flight-simulation apps",
   "url": "https://github.com/brianhvo02/kyouyuu",
-  "version": "0.20.0",
-  "released": "2026-11-20",
+  "version": "0.21.0",
+  "released": "2026-11-21",
   "changelog": [
+    {
+      "version": "0.21.0",
+      "date": "2026-11-21",
+      "added": [],
+      "changed": [
+        "`style/tokens.css`: Kōhō's accent `--kk-kouhou` is violet `#6b4fc8` (was a provisional slate), chosen by the owner; white text on it stays."
+      ],
+      "fixed": [],
+      "removed": []
+    },
     {
       "version": "0.20.0",
       "date": "2026-11-20",

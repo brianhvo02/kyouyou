@@ -43,9 +43,7 @@
   --kk-on-koukuuzu: #fff;
   --kk-kansei: #1e8a4c;
   --kk-on-kansei: #000;
-  /* Kōhō: provisional until Kōhō's page design. A neutral slate so nothing breaks meanwhile; like
-     the other accents it does not change with the theme. */
-  --kk-kouhou: #5b6b7a;
+  --kk-kouhou: #6b4fc8;
   --kk-on-kouhou: #fff;
   --kk-kakunouko: #c77700;
   --kk-on-kakunouko: #000;

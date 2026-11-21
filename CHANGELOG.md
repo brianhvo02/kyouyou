@@ -6,6 +6,12 @@ All notable changes to Kyōyū (共有) are recorded here, newest first. The for
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-11-21
+
+### Changed
+
+- `style/tokens.css`: Kōhō's accent `--kk-kouhou` is violet `#6b4fc8` (was a provisional slate), chosen by the owner; white text on it stays.
+
 ## [0.20.0] - 2026-11-20
 
 ### Changed
