@@ -34,6 +34,14 @@ describe('describeAltitude', () => {
     expect(describeAltitude('Y', '1500', '1620')).toBe('at or below 1,500 ft (step-down fix; 1,620 ft on the vertical path)');
   });
 
+  test('a blank first altitude on G to J and V to Y leaves only the second', () => {
+    expect(describeAltitude('G', '', '2010')).toBe('glide slope at 2,010 ft');
+    expect(describeAltitude('H', '', '2010')).toBe('glide slope at 2,010 ft');
+    expect(describeAltitude('I', '', '2010')).toBe('glide slope intercept at 2,010 ft');
+    expect(describeAltitude('J', ' ', '2010')).toBe('glide slope intercept at 2,010 ft');
+    for (const d of ['V', 'X', 'Y']) expect(describeAltitude(d, '', '1620')).toBe('1,620 ft on the vertical path (step-down fix)');
+  });
+
   test('between with only one altitude says so', () => {
     expect(describeAltitude('B', '9000', '')).toBe('between 9,000 ft and (none given)');
   });
@@ -45,7 +53,7 @@ describe('describeAltitude', () => {
 
   test('negative altitudes and odd text pass through readably', () => {
     expect(describeAltitude(' ', '-0010', '')).toBe('at -10 ft');
-    expect(describeAltitude(' ', 'ABCDE', '')).toBe('at ABCDE');
+    expect(describeAltitude(' ', 'XABCD', '')).toBe('at XABCD');
   });
 
   test('an unknown descriptor keeps the code', () => {
@@ -139,7 +147,7 @@ describe('speedLimitDescription', () => {
   });
 
   test('odd text passes through, an unknown descriptor keeps its code', () => {
-    expect(speedLimitDescription(' ', 'ABC')).toBe('at ABC');
+    expect(speedLimitDescription(' ', 'XAB')).toBe('at XAB');
     expect(speedLimitDescription('Q', '200')).toBe('200 kt (speed code Q)');
   });
 });

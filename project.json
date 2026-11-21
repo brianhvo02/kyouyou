@@ -171,8 +171,8 @@
   ],
   "unreleased": {
     "added": [
-      "`project` and `family-bar`: Kōhō (航法) joins the family as `koho`, a `ProjectId` and a family-bar member between Kansei and Kakunouko (public address `https://koho.pages.dev/`, home path `../koho/`), with the accent tokens `--kk-koho` and `--kk-on-koho` (a provisional slate until Kōhō's page design) and `data-kk-accent=\"koho\"`.",
-      "`arinc424/records`: ARINC 424-18 record kinds: `recordKindName` names every common section and subsection, `recordLayout` gives the identity, sequence and continuation columns for twenty kinds (procedure legs, airspace, FIR/UIR, runways, airports, communications, MSAs, path points, airway restrictions, navaids, markers and GLS stations), and `subsectionColumn` and `subsectionOf` find the subsection code (terminal NDBs included).",
+      "`project` and `family-bar`: Kōhō (航法) joins the family as `koho`, a `ProjectId` and a family-bar member between Kansei and Kakunouko (public address `https://koho.pages.dev/`, home path `../koho/`), with the accent tokens `--kk-koho` and `--kk-on-koho` (a provisional slate until Kōhō's page design) and `data-kk-accent=\"koho\"`. Hosts upgrading should add `koho` to the family bar's `unavailable` until Kōhō is live, or the bar links an address with nothing behind it yet. The KK Mincho subset now carries 法.",
+      "`arinc424/records`: ARINC 424-18 record kinds: `recordKindName` names every common section and subsection, `recordLayout` gives the identity, sequence and continuation columns for twenty kinds (procedure legs, airspace, FIR/UIR, runways, airports, communications, MSAs, path points, airway restrictions, navaids, markers and GLS reference paths; one primary record per identity and sequence, except the communications kinds, marked `grouped`, whose records form a set), and `subsectionColumn` and `subsectionOf` find the subsection code (terminal NDBs included). Types: `RecordLayout`, `ColumnSpan`, `IdentityField`.",
       "`arinc424/codes`: ARINC 424-18 codes in plain words: `describeAltitude`, `pathTerminatorName`, `routeTypeName`, `turnDirectionName` and `speedLimitDescription`."
     ],
     "changed": [],

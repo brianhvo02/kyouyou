@@ -278,14 +278,12 @@ main h3 { margin-top: var(--kk-space-5); }
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--kk-space-4);
 }
-/* The departures board takes the room of two panels. */
-.panels [data-kk-accent="kuukou"] { grid-column: span 2; }
+/* Six members: two rows of three, three rows of two, or one column. */
 @media (max-width: 960px) {
   .panels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
   .panels { grid-template-columns: minmax(0, 1fr); }
-  .panels [data-kk-accent="kuukou"] { grid-column: auto; }
 }
 .panel {
   display: flex;
@@ -369,6 +367,29 @@ main h3 { margin-top: var(--kk-space-5); }
   color: oklch(from var(--kk-kansei) 0.82 c h);
 }
 .radio .said { font-size: var(--kk-step--1); }
+
+/* Kōhō: the cycle-to-cycle ledger in slate. */
+.ledger {
+  background: color-mix(in oklab, var(--kk-koho) 7%, var(--kk-surface));
+  border: 1px solid color-mix(in oklab, var(--kk-koho) 35%, var(--kk-rule));
+}
+.ledger .cycles {
+  margin-bottom: var(--kk-space-2);
+  font-size: var(--kk-step-3);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--kk-accent-text);
+}
+.ledger .cycles span { color: var(--kk-ink-muted); font-weight: 400; }
+.changes { margin: 0; padding: 0; list-style: none; }
+.changes li {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+  padding-block: var(--kk-space-1);
+  border-top: 1px solid color-mix(in oklab, var(--kk-koho) 25%, var(--kk-rule));
+}
+.changes .mark { font-family: var(--kk-font-figures); font-weight: 700; color: var(--kk-accent-text); }
+.changes .kk-figures { font-weight: 700; }
 
 /* Kakunouko: the hangar status in amber. */
 .hangar {

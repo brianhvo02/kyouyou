@@ -3,7 +3,9 @@
 // sequence number that renumbers, and which the continuation number.
 //
 // Columns are 1-based and inclusive, on the 132-column record. Every record starts the same way:
-// column 1 record type (S standard, T tailored), 2–4 customer or area code, 5 section code. Airport (P)
+// column 1 record type (S standard, T tailored), 2–4 customer or area code, 5 section code. The area
+// code is part of the identity where the same name is used again in another area (airway restrictions,
+// restrictive airspace). Airport (P)
 // and heliport (H) records then carry the airport or heliport at 7–10, its ICAO region at 11–12 and the
 // subsection at 13; every other section has its subsection at column 6. Terminal NDBs are the exception:
 // section P with N at column 6 (they share the navaid layout) and column 13 blank; `subsectionOf` knows.
@@ -65,7 +67,7 @@ const KIND_NAMES = {
     PP: 'Path point',
     PR: 'Flight planning arrival and departure data',
     PS: 'MSA',
-    PT: 'GLS station',
+    PT: 'GLS reference path',
     PV: 'Airport communications',
     // R: company routes
     'R ': 'Company route',
@@ -85,49 +87,53 @@ export function recordKindName(section, subsection) {
 const kindKey = (section, subsection) => `${section}${subsection === '' ? ' ' : subsection}`;
 const f = (name, start, end = start) => ({ name, start, end });
 const s = (start, end = start) => ({ start, end });
-function layout(identity, continuation, sequence) {
-    const l = { identity: Object.freeze(identity.map((x) => Object.freeze(x))), continuation: Object.freeze(continuation) };
-    if (sequence !== undefined)
-        l.sequence = Object.freeze(sequence);
-    return Object.freeze(l);
+function layout(identity, continuation, sequence, grouped) {
+    return Object.freeze({
+        identity: Object.freeze(identity.map((x) => Object.freeze(x))),
+        continuation: Object.freeze(continuation),
+        ...(sequence === undefined ? {} : { sequence: Object.freeze(sequence) }),
+        ...(grouped === undefined ? {} : { grouped: true }),
+    });
 }
-const AIRPORT = [f('airport', 7, 10), f('icao', 11, 12)];
+const AIRPORT = [f('airport', 7, 10), f('airportRegion', 11, 12)];
 // SID, STAR and approach legs (../faa/cifp.ts reads the same columns): procedure 14–19, route type 20,
 // transition 21–25, sequence 27–29, continuation 39. The leg's fix (30–34) is data, not identity, so a
 // changed fix shows as a change in the procedure's list of legs.
 const PROCEDURE = layout([...AIRPORT, f('procedure', 14, 19), f('routeType', 20), f('transition', 21, 25)], s(39), s(27, 29));
 // Navaids: the airport (terminal navaids only) and its region at 7–12, the ident at 14–17, the navaid's
 // own region at 20–21, continuation 22. VHF navaids (D, blank subsection), NDBs (DB) and terminal NDBs (PN).
-const NAVAID = layout([f('airport', 7, 10), f('airportIcao', 11, 12), f('ident', 14, 17), f('icao', 20, 21)], s(22));
+const NAVAID = layout([...AIRPORT, f('ident', 14, 17), f('region', 20, 21)], s(22));
 const LAYOUTS = {
     PD: PROCEDURE,
     PE: PROCEDURE,
     PF: PROCEDURE,
-    // Restrictive airspace (as ../faa/airspace.ts reads it): region 7–8, type 9, designation 10–19,
+    // Restrictive airspace (grouped as ../faa/airspace.ts groups it, by area code and 7–20): area 2–4,
+    // region 7–8, type 9, designation 10–19, multiple code 20, sequence 21–24, continuation 25.
+    UR: layout([f('area', 2, 4), f('region', 7, 8), f('type', 9), f('designation', 10, 19), f('multipleCode', 20)], s(25), s(21, 24)),
+    // Controlled airspace: region 7–8, type 9, centre 10–14 with its section 15 and subsection 16,
+    // classification 17 (one centre can have areas of several classes under the same multiple code),
     // multiple code 20, sequence 21–24, continuation 25.
-    UR: layout([f('icao', 7, 8), f('type', 9), f('designation', 10, 19), f('multipleCode', 20)], s(25), s(21, 24)),
-    // Controlled airspace: region 7–8, type 9, centre 10–14 with its section 15 and subsection 16; the
-    // classification at 17 is data; multiple code 20, sequence 21–24, continuation 25.
-    UC: layout([f('icao', 7, 8), f('type', 9), f('centre', 10, 14), f('centreSection', 15), f('centreSubsection', 16), f('multipleCode', 20)], s(25), s(21, 24)),
+    UC: layout([f('region', 7, 8), f('type', 9), f('centre', 10, 14), f('centreSection', 15), f('centreSubsection', 16), f('classification', 17), f('multipleCode', 20)], s(25), s(21, 24)),
     // FIR/UIR: ident 7–10, address 11–14, indicator (F, U or B) 15, sequence 16–19, continuation 20.
     UF: layout([f('ident', 7, 10), f('address', 11, 14), f('indicator', 15)], s(20), s(16, 19)),
     // Runway (../faa/cifp.ts): runway 14–18, continuation 22.
     PG: layout([...AIRPORT, f('runway', 14, 18)], s(22)),
-    // Airport communications: type 14–16 (the frequency at 17–23 is data, so several of one type form a
-    // list), continuation 26.
-    PV: layout([...AIRPORT, f('type', 14, 16)], s(26)),
+    // Airport communications: type 14–16, continuation 26. The frequency at 17–23 is data, so several of
+    // one type form a list (grouped).
+    PV: layout([...AIRPORT, f('type', 14, 16)], s(26), undefined, 'grouped'),
     // Enroute communications: FIR/RDO 7–10, address 11–14, indicator 15, remote site name 19–43, type
-    // 44–46 (frequency 47–53 is data), continuation 56.
-    EV: layout([f('ident', 7, 10), f('address', 11, 14), f('indicator', 15), f('remoteName', 19, 43), f('type', 44, 46)], s(56)),
+    // 44–46, continuation 56. The frequency at 47–53 is data, so several form a list (grouped).
+    EV: layout([f('ident', 7, 10), f('address', 11, 14), f('indicator', 15), f('remoteName', 19, 43), f('type', 44, 46)], s(56), undefined, 'grouped'),
     // Airport (../faa/cifp.ts reads its continuation at 22).
     PA: layout([...AIRPORT], s(22)),
     // MSA: centre 14–18 with its region 19–20, section 21 and subsection 22, multiple code 23, continuation 39.
-    PS: layout([...AIRPORT, f('centre', 14, 18), f('centreIcao', 19, 20), f('centreSection', 21), f('centreSubsection', 22), f('multipleCode', 23)], s(39)),
+    PS: layout([...AIRPORT, f('centre', 14, 18), f('centreRegion', 19, 20), f('centreSection', 21), f('centreSubsection', 22), f('multipleCode', 23)], s(39)),
     // Path point (SBAS/GBAS final approach segment): approach 14–19, runway 20–24, continuation 27
     // (operation type 25–26 and the rest are data).
     PP: layout([...AIRPORT, f('approach', 14, 19), f('runway', 20, 24)], s(27)),
-    // Airway restriction: route 7–11, restriction ident 13–15, restriction type 16–17, continuation 18.
-    EU: layout([f('route', 7, 11), f('restriction', 13, 15), f('restrictionType', 16, 17)], s(18)),
+    // Airway restriction: area 2–4 (route idents repeat between areas), route 7–11, restriction ident
+    // 13–15, restriction type 16–17, continuation 18.
+    EU: layout([f('area', 2, 4), f('route', 7, 11), f('restriction', 13, 15), f('restrictionType', 16, 17)], s(18)),
     'D ': NAVAID,
     DB: NAVAID,
     PN: NAVAID,
@@ -137,8 +143,8 @@ const LAYOUTS = {
     // two-letter type one column to the right; 18–20 holds it either way.
     PM: layout([...AIRPORT, f('localizer', 14, 17), f('markerType', 18, 20)], s(22)),
     // Airway marker: ident 14–17, region 20–21, continuation 22.
-    EM: layout([f('ident', 14, 17), f('icao', 20, 21)], s(22)),
-    // GLS station: reference path ident 14–17, continuation 22.
+    EM: layout([f('ident', 14, 17), f('region', 20, 21)], s(22)),
+    // GLS reference path: reference path ident 14–17, continuation 22.
     PT: layout([...AIRPORT, f('referencePath', 14, 17)], s(22)),
 };
 /** Where the identity, sequence and continuation are for a record kind, or null for a kind not covered. */

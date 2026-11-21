@@ -38,11 +38,11 @@ describe('subsectionOf', () => {
     expect(subsectionOf(record({1: 'S', 5: 'P', 7: 'XAAA', 11: 'XX', 13: 'F'}))).toBe('F');
     expect(subsectionOf(record({1: 'S', 5: 'H', 7: 'XAAA', 11: 'XX', 13: 'S'}))).toBe('S');
     expect(subsectionOf(record({1: 'S', 5: 'U', 6: 'C'}))).toBe('C');
-    expect(subsectionOf(record({1: 'S', 5: 'D', 14: 'ABC'}))).toBe(' ');
+    expect(subsectionOf(record({1: 'S', 5: 'D', 14: 'XAB'}))).toBe(' ');
   });
 
   test('a terminal NDB is the exception: P with N in column 6 and column 13 blank', () => {
-    expect(subsectionOf(record({1: 'S', 5: 'P', 6: 'N', 7: 'XAAA', 11: 'XX', 14: 'AB'}))).toBe('N');
+    expect(subsectionOf(record({1: 'S', 5: 'P', 6: 'N', 7: 'XAAA', 11: 'XX', 14: 'XB'}))).toBe('N');
   });
 
   test('reads a short line as if padded with blanks', () => {
@@ -62,7 +62,7 @@ describe('recordKindName', () => {
     expect(recordKindName('D', ' ')).toBe('VHF navaid');
     expect(recordKindName('D', 'B')).toBe('NDB navaid');
     expect(recordKindName('P', 'N')).toBe('Terminal NDB');
-    expect(recordKindName('P', 'T')).toBe('GLS station');
+    expect(recordKindName('P', 'T')).toBe('GLS reference path');
     expect(recordKindName('P', 'M')).toBe('Localizer marker');
     expect(recordKindName('E', 'M')).toBe('Airway marker');
     expect(recordKindName('U', 'R')).toBe('Restrictive airspace');
@@ -100,12 +100,13 @@ describe('recordLayout', () => {
     expect(recordLayout('D', '')).toEqual(recordLayout('D', ' '));
   });
 
-  test('every span is 1-based, inclusive, within columns 6 to 123, and no two overlap', () => {
+  test('every span is 1-based, inclusive, within columns 2 to 123, clear of the section code, and no two overlap', () => {
     for (const [s, sub] of COVERED) {
       const l = recordLayout(s, sub)!;
       const spans = [...l.identity, ...(l.sequence ? [l.sequence] : []), ...(l.continuation ? [l.continuation] : [])];
       for (const x of spans) {
-        expect.soft(x.start, `${s}${sub}`).toBeGreaterThanOrEqual(6);
+        expect.soft(x.start, `${s}${sub}`).toBeGreaterThanOrEqual(2);
+        expect.soft(x.start <= 5 && x.end >= 5, `${s}${sub} covers the section code`).toBe(false);
         expect.soft(x.end, `${s}${sub}`).toBeLessThanOrEqual(123);
         expect.soft(x.start, `${s}${sub}`).toBeLessThanOrEqual(x.end);
       }
@@ -118,26 +119,29 @@ describe('recordLayout', () => {
 
   test('SID, STAR and approach legs: airport, procedure, route type, transition; sequence 27–29; continuation 39', () => {
     for (const sub of ['D', 'E', 'F']) {
-      const r = record({1: 'S', 2: 'XXX', 5: 'P', 7: 'XAAA', 11: 'XX', 13: sub, 14: 'ABCD1Y', 20: '5', 21: 'XBBBB', 27: '020', 30: 'XCCCC', 35: 'XX', 37: 'P', 38: 'C', 39: '1'});
+      const r = record({1: 'S', 2: 'XXX', 5: 'P', 7: 'XAAA', 11: 'XX', 13: sub, 14: 'XABC1Y', 20: '5', 21: 'XBBBB', 27: '020', 30: 'XCCCC', 35: 'XX', 37: 'P', 38: 'C', 39: '1'});
       const l = recordLayout('P', sub)!;
-      expect(identity(l, r)).toEqual({airport: 'XAAA', icao: 'XX', procedure: 'ABCD1Y', routeType: '5', transition: 'XBBBB'});
+      expect(identity(l, r)).toEqual({airport: 'XAAA', airportRegion: 'XX', procedure: 'XABC1Y', routeType: '5', transition: 'XBBBB'});
       expect(span(r, l.sequence)).toBe('020');
       expect(span(r, l.continuation)).toBe('1');
     }
   });
 
-  test('restrictive airspace: region, type, designation, multiple code; sequence 21–24; continuation 25', () => {
-    const r = record({1: 'S', 5: 'U', 6: 'R', 7: 'XX', 9: 'R', 10: 'XR-1234', 20: 'A', 21: '0010', 25: '1', 26: 'G'});
+  test('restrictive airspace: area, region, type, designation, multiple code; sequence 21–24; continuation 25', () => {
+    const r = record({1: 'S', 2: 'XXX', 5: 'U', 6: 'R', 7: 'XX', 9: 'R', 10: 'XR-1234', 20: 'A', 21: '0010', 25: '1', 26: 'G'});
     const l = recordLayout('U', 'R')!;
-    expect(identity(l, r)).toEqual({icao: 'XX', type: 'R', designation: 'XR-1234', multipleCode: 'A'});
+    expect(identity(l, r)).toEqual({area: 'XXX', region: 'XX', type: 'R', designation: 'XR-1234', multipleCode: 'A'});
     expect(span(r, l.sequence)).toBe('0010');
     expect(span(r, l.continuation)).toBe('1');
   });
 
-  test('controlled airspace: region, type, centre and its section, multiple code; class is not identity', () => {
+  test('controlled airspace: region, type, centre and its section, classification, multiple code', () => {
     const r = record({1: 'S', 5: 'U', 6: 'C', 7: 'XX', 9: 'T', 10: 'XAAA', 15: 'P', 16: 'A', 17: 'C', 20: 'B', 21: '0020', 25: '1'});
     const l = recordLayout('U', 'C')!;
-    expect(identity(l, r)).toEqual({icao: 'XX', type: 'T', centre: 'XAAA', centreSection: 'P', centreSubsection: 'A', multipleCode: 'B'});
+    expect(identity(l, r)).toEqual({region: 'XX', type: 'T', centre: 'XAAA', centreSection: 'P', centreSubsection: 'A', classification: 'C', multipleCode: 'B'});
+    // Two areas of one centre that differ only in class are different areas.
+    const other = record({1: 'S', 5: 'U', 6: 'C', 7: 'XX', 9: 'T', 10: 'XAAA', 15: 'P', 16: 'A', 17: 'D', 20: 'B', 21: '0020', 25: '1'});
+    expect(identity(l, other)).not.toEqual(identity(l, r));
     expect(span(r, l.sequence)).toBe('0020');
     expect(span(r, l.continuation)).toBe('1');
   });
@@ -153,7 +157,7 @@ describe('recordLayout', () => {
   test('runway: airport and runway; continuation 22; no sequence', () => {
     const r = record({1: 'S', 5: 'P', 7: 'XAAA', 11: 'XX', 13: 'G', 14: 'RW09L', 22: '2'});
     const l = recordLayout('P', 'G')!;
-    expect(identity(l, r)).toEqual({airport: 'XAAA', icao: 'XX', runway: 'RW09L'});
+    expect(identity(l, r)).toEqual({airport: 'XAAA', airportRegion: 'XX', runway: 'RW09L'});
     expect(l.sequence).toBeUndefined();
     expect(span(r, l.continuation)).toBe('2');
   });
@@ -161,14 +165,14 @@ describe('recordLayout', () => {
   test('airport: airport; continuation 22', () => {
     const r = record({1: 'S', 5: 'P', 7: 'XAAA', 11: 'XX', 13: 'A', 14: 'XAA', 22: '0'});
     const l = recordLayout('P', 'A')!;
-    expect(identity(l, r)).toEqual({airport: 'XAAA', icao: 'XX'});
+    expect(identity(l, r)).toEqual({airport: 'XAAA', airportRegion: 'XX'});
     expect(span(r, l.continuation)).toBe('0');
   });
 
   test('airport communications: airport and type; continuation 26', () => {
     const r = record({1: 'S', 5: 'P', 7: 'XAAA', 11: 'XX', 13: 'V', 14: 'TWR', 17: '0999990', 25: 'V', 26: '2'});
     const l = recordLayout('P', 'V')!;
-    expect(identity(l, r)).toEqual({airport: 'XAAA', icao: 'XX', type: 'TWR'});
+    expect(identity(l, r)).toEqual({airport: 'XAAA', airportRegion: 'XX', type: 'TWR'});
     expect(span(r, l.continuation)).toBe('2');
   });
 
@@ -182,29 +186,29 @@ describe('recordLayout', () => {
   test('MSA: airport, centre with its region and section, multiple code; continuation 39', () => {
     const r = record({1: 'S', 5: 'P', 7: 'XAAA', 11: 'XX', 13: 'S', 14: 'XBBBB', 19: 'XX', 21: 'P', 22: 'C', 23: 'A', 39: '1'});
     const l = recordLayout('P', 'S')!;
-    expect(identity(l, r)).toEqual({airport: 'XAAA', icao: 'XX', centre: 'XBBBB', centreIcao: 'XX', centreSection: 'P', centreSubsection: 'C', multipleCode: 'A'});
+    expect(identity(l, r)).toEqual({airport: 'XAAA', airportRegion: 'XX', centre: 'XBBBB', centreRegion: 'XX', centreSection: 'P', centreSubsection: 'C', multipleCode: 'A'});
     expect(span(r, l.continuation)).toBe('1');
   });
 
   test('path point: airport, approach, runway; continuation 27', () => {
     const r = record({1: 'S', 5: 'P', 7: 'XAAA', 11: 'XX', 13: 'P', 14: 'R09L', 20: 'RW09L', 25: '00', 27: '1'});
     const l = recordLayout('P', 'P')!;
-    expect(identity(l, r)).toEqual({airport: 'XAAA', icao: 'XX', approach: 'R09L', runway: 'RW09L'});
+    expect(identity(l, r)).toEqual({airport: 'XAAA', airportRegion: 'XX', approach: 'R09L', runway: 'RW09L'});
     expect(span(r, l.continuation)).toBe('1');
   });
 
-  test('airway restriction: route, restriction ident and type; continuation 18', () => {
-    const r = record({1: 'S', 5: 'E', 6: 'U', 7: 'X123', 13: '042', 16: 'AE', 18: '1', 19: 'XAAAA'});
+  test('airway restriction: area, route, restriction ident and type; continuation 18', () => {
+    const r = record({1: 'S', 2: 'XXX', 5: 'E', 6: 'U', 7: 'X123', 13: '042', 16: 'AE', 18: '1', 19: 'XAAAA'});
     const l = recordLayout('E', 'U')!;
-    expect(identity(l, r)).toEqual({route: 'X123', restriction: '042', restrictionType: 'AE'});
+    expect(identity(l, r)).toEqual({area: 'XXX', route: 'X123', restriction: '042', restrictionType: 'AE'});
     expect(span(r, l.continuation)).toBe('1');
   });
 
   test('VHF navaid, NDB and terminal NDB: airport, ident, region; continuation 22', () => {
     for (const [s, sub, at6] of [['D', ' ', ' '], ['D', 'B', 'B'], ['P', 'N', 'N']] as const) {
-      const r = record({1: 'S', 5: s, 6: at6, 7: 'XAAA', 11: 'XX', 14: 'ABC', 20: 'XY', 22: '1', 23: '11500'});
+      const r = record({1: 'S', 5: s, 6: at6, 7: 'XAAA', 11: 'XX', 14: 'XAB', 20: 'XY', 22: '1', 23: '11500'});
       const l = recordLayout(s, sub)!;
-      expect(identity(l, r), `${s}${sub}`).toEqual({airport: 'XAAA', airportIcao: 'XX', ident: 'ABC', icao: 'XY'});
+      expect(identity(l, r), `${s}${sub}`).toEqual({airport: 'XAAA', airportRegion: 'XX', ident: 'XAB', region: 'XY'});
       expect(span(r, l.continuation)).toBe('1');
     }
   });
@@ -212,29 +216,38 @@ describe('recordLayout', () => {
   test('localizer and glide slope: airport and localizer; continuation 22', () => {
     const r = record({1: 'S', 5: 'P', 7: 'XAAA', 11: 'XX', 13: 'I', 14: 'IXAA', 18: '1', 22: '0', 23: '10990'});
     const l = recordLayout('P', 'I')!;
-    expect(identity(l, r)).toEqual({airport: 'XAAA', icao: 'XX', localizer: 'IXAA'});
+    expect(identity(l, r)).toEqual({airport: 'XAAA', airportRegion: 'XX', localizer: 'IXAA'});
     expect(span(r, l.continuation)).toBe('0');
   });
 
   test('localizer marker: airport, localizer, marker type; continuation 22', () => {
     const r = record({1: 'S', 5: 'P', 7: 'XAAA', 11: 'XX', 13: 'M', 14: 'IXAA', 18: 'OM ', 22: '0'});
     const l = recordLayout('P', 'M')!;
-    expect(identity(l, r)).toEqual({airport: 'XAAA', icao: 'XX', localizer: 'IXAA', markerType: 'OM'});
+    expect(identity(l, r)).toEqual({airport: 'XAAA', airportRegion: 'XX', localizer: 'IXAA', markerType: 'OM'});
     expect(span(r, l.continuation)).toBe('0');
   });
 
   test('airway marker: ident and region; continuation 22', () => {
     const r = record({1: 'S', 5: 'E', 6: 'M', 14: 'XM01', 20: 'XX', 22: '0'});
     const l = recordLayout('E', 'M')!;
-    expect(identity(l, r)).toEqual({ident: 'XM01', icao: 'XX'});
+    expect(identity(l, r)).toEqual({ident: 'XM01', region: 'XX'});
     expect(span(r, l.continuation)).toBe('0');
   });
 
-  test('GLS station: airport and reference path; continuation 22', () => {
-    const r = record({1: 'S', 5: 'P', 7: 'XAAA', 11: 'XX', 13: 'T', 14: 'G09A', 18: '1', 22: '0', 23: '29999'});
+  test('GLS reference path: airport and reference path; continuation 22', () => {
+    const r = record({1: 'S', 5: 'P', 7: 'XAAA', 11: 'XX', 13: 'T', 14: 'X09A', 18: '1', 22: '0', 23: '29999'});
     const l = recordLayout('P', 'T')!;
-    expect(identity(l, r)).toEqual({airport: 'XAAA', icao: 'XX', referencePath: 'G09A'});
+    expect(identity(l, r)).toEqual({airport: 'XAAA', airportRegion: 'XX', referencePath: 'X09A'});
     expect(span(r, l.continuation)).toBe('0');
+  });
+
+  test('communications records are grouped: several share an identity and form a set; the rest are not', () => {
+    expect(recordLayout('P', 'V')!.grouped).toBe(true);
+    expect(recordLayout('E', 'V')!.grouped).toBe(true);
+    for (const [s, sub] of COVERED) {
+      if (`${s}${sub}` === 'PV' || `${s}${sub}` === 'EV') continue;
+      expect.soft(recordLayout(s, sub)!.grouped, `${s}${sub}`).toBeUndefined();
+    }
   });
 
   test('layouts are frozen', () => {

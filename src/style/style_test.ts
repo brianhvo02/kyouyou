@@ -8,7 +8,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const read = (name: string): string => readFileSync(join(here, name), 'utf8');
 
 /** The kanji of the family's names (拠点空港, 航路, 航空図, 管制, 格納庫, 共有), once each. */
-const FAMILY_KANJI = [...new Set('拠点空港航路図管制格納庫共有')];
+const FAMILY_KANJI = [...new Set('拠点空港航路図管制法格納庫共有')];
 
 const ACCENTS = ['kuukou', 'kouro', 'kokuzu', 'kansei', 'koho', 'kakunouko'] as const;
 
@@ -500,7 +500,7 @@ describe('the Mincho subset', () => {
 
   test('uses the kanji list the script builds from', () => {
     const script = readFileSync(join(here, '..', '..', 'scripts', 'subset-jp.mjs'), 'utf8');
-    expect(script).toContain("'拠点空港航路図管制格納庫共有'");
+    expect(script).toContain("'拠点空港航路図管制法格納庫共有'");
   });
 });
 

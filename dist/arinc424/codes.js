@@ -22,10 +22,20 @@ export function describeAltitude(descriptor, alt1, alt2) {
     const b = alt2.trim() === '' ? '' : altitude(alt2);
     if (a === '' && b === '')
         return '';
-    const then = (first, second) => (b === '' ? first : `${first}, ${second} ${b}`);
+    // G to J: the first altitude is the fix's limit, the second the glide slope (or its intercept) there.
+    // Either may be blank; a blank first altitude leaves only the second.
+    const then = (first, second) => {
+        if (a === '')
+            return `${second} ${b}`;
+        return b === '' ? `${first} ${a}` : `${first} ${a}, ${second} ${b}`;
+    };
     // V, X and Y mark a step-down fix on a coded vertical angle: the first altitude is the fix's limit, the
     // second the altitude of the vertical path there.
-    const stepDown = (words) => (b === '' ? `${words} ${a}` : `${words} ${a} (step-down fix; ${b} on the vertical path)`);
+    const stepDown = (words) => {
+        if (a === '')
+            return `${b} on the vertical path (step-down fix)`;
+        return b === '' ? `${words} ${a}` : `${words} ${a} (step-down fix; ${b} on the vertical path)`;
+    };
     switch (d) {
         case '':
         case '@': return `at ${a || b}`;
@@ -33,10 +43,10 @@ export function describeAltitude(descriptor, alt1, alt2) {
         case '-': return `at or below ${a || b}`;
         case 'B': return `between ${a || '(none given)'} and ${b || '(none given)'}`;
         case 'C': return `at or above ${b || a}`;
-        case 'G': return then(`at ${a}`, 'glide slope at');
-        case 'H': return then(`at or above ${a}`, 'glide slope at');
-        case 'I': return then(`at ${a}`, 'glide slope intercept at');
-        case 'J': return then(`at or above ${a}`, 'glide slope intercept at');
+        case 'G': return then('at', 'glide slope at');
+        case 'H': return then('at or above', 'glide slope at');
+        case 'I': return then('at', 'glide slope intercept at');
+        case 'J': return then('at or above', 'glide slope intercept at');
         case 'V': return stepDown('at or above');
         case 'X': return stepDown('at');
         case 'Y': return stepDown('at or below');
