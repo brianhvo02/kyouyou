@@ -4,9 +4,19 @@
   "name": "kyouyou (共有)",
   "summary": "Code shared by the Kuukou flight-simulation apps",
   "url": "https://github.com/brianhvo02/kyouyou",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "released": "2026-11-20",
   "changelog": [
+    {
+      "version": "0.17.0",
+      "date": "2026-11-20",
+      "added": [
+        "`wx/upstream`: `relayHazards` (with `hazardsUpstream` and `HAZARDS_PATH`), the weather-hazards relay: `?kind=sigmet|isigmet|gairmet` answers with NOAA's GeoJSON FeatureCollection, forwarding only the kind; callers cache it for 300 s."
+      ],
+      "changed": [],
+      "fixed": [],
+      "removed": []
+    },
     {
       "version": "0.16.0",
       "date": "2026-11-20",
@@ -150,9 +160,7 @@
     }
   ],
   "unreleased": {
-    "added": [
-      "`wx/upstream`: `relayHazards` (with `hazardsUpstream` and `HAZARDS_PATH`), the weather-hazards relay: `?kind=sigmet|isigmet|gairmet` answers with NOAA's GeoJSON FeatureCollection, forwarding only the kind; callers cache it for 300 s."
-    ],
+    "added": [],
     "changed": [],
     "fixed": [],
     "removed": []

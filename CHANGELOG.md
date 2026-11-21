@@ -6,6 +6,8 @@ All notable changes to kyouyou (共有) are recorded here, newest first. The for
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-11-20
+
 ### Added
 
 - `wx/upstream`: `relayHazards` (with `hazardsUpstream` and `HAZARDS_PATH`), the weather-hazards relay: `?kind=sigmet|isigmet|gairmet` answers with NOAA's GeoJSON FeatureCollection, forwarding only the kind; callers cache it for 300 s.

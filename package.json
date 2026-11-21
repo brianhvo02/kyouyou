@@ -1,6 +1,6 @@
 {
   "name": "kyouyou",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Code shared by the Kōkūzu, Kōro and Kansei flight-simulation apps",
   "license": "UNLICENSED",
   "private": true,
