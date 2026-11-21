@@ -121,6 +121,10 @@
       "types": "./dist/arinc424/records.d.ts",
       "default": "./dist/arinc424/records.js"
     },
+    "./arinc424/codes": {
+      "types": "./dist/arinc424/codes.d.ts",
+      "default": "./dist/arinc424/codes.js"
+    },
     "./project": {
       "types": "./dist/project/project.d.ts",
       "default": "./dist/project/project.js"

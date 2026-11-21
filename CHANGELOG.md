@@ -10,6 +10,7 @@ All notable changes to kyouyou (共有) are recorded here, newest first. The for
 
 - `project` and `family-bar`: Kōhō (航法) joins the family as `koho`, a `ProjectId` and a family-bar member between Kansei and Kakunouko (public address `https://koho.pages.dev/`, home path `../koho/`), with the accent tokens `--kk-koho` and `--kk-on-koho` (a provisional slate until Kōhō's page design) and `data-kk-accent="koho"`.
 - `arinc424/records`: ARINC 424-18 record kinds: `recordKindName` names every common section and subsection, `recordLayout` gives the identity, sequence and continuation columns for twenty kinds (procedure legs, airspace, FIR/UIR, runways, airports, communications, MSAs, path points, airway restrictions, navaids, markers and GLS stations), and `subsectionColumn` and `subsectionOf` find the subsection code (terminal NDBs included).
+- `arinc424/codes`: ARINC 424-18 codes in plain words: `describeAltitude`, `pathTerminatorName`, `routeTypeName`, `turnDirectionName` and `speedLimitDescription`.
 
 ## [0.18.0] - 2026-11-20
 
