@@ -6,6 +6,8 @@ All notable changes to Kyōyū (共有) are recorded here, newest first. The for
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-11-20
+
 ### Changed
 
 - The package is renamed `kyouyou` → `kyouyuu` (display name Kyōyū), and its repository `brianhvo02/kyouyou` → `brianhvo02/kyouyuu` (GitHub redirects the old address). Short names now write long vowels out as typed (`ou`, `uu`); display names carry macrons (Kyoten Kūkō, Kōro, Kōkūzu, Kansei, Kōhō, Kakunōko, Kyōyū), on the family bar's signs too (Kūkō, Kōro, Kakunōko).
