@@ -10,7 +10,7 @@ const read = (name: string): string => readFileSync(join(here, name), 'utf8');
 /** The kanji of the family's names (拠点空港, 航路, 航空図, 管制, 格納庫, 共有), once each. */
 const FAMILY_KANJI = [...new Set('拠点空港航路図管制格納庫共有')];
 
-const ACCENTS = ['kuukou', 'kouro', 'kokuzu', 'kansei', 'kakunouko'] as const;
+const ACCENTS = ['kuukou', 'kouro', 'kokuzu', 'kansei', 'koho', 'kakunouko'] as const;
 
 /** Properties that change with the theme: every dark selector defines each of them. */
 const THEMED = ['--kk-ground', '--kk-surface', '--kk-ink', '--kk-ink-muted', '--kk-rule', '--kk-rule-strong', '--kk-accent-text'];

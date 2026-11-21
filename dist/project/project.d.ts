@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite';
-export type ProjectId = 'kouro' | 'kokuzu' | 'kansei' | 'kyouyou';
+export type ProjectId = 'kouro' | 'kokuzu' | 'kansei' | 'koho' | 'kyouyou';
 export interface ChangeSet {
     added: string[];
     changed: string[];

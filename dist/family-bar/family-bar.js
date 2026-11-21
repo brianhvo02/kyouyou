@@ -6,7 +6,7 @@
  *   <kk-family-bar current="kouro" mode="public"></kk-family-bar>
  *
  * Attributes:
- * - current: kuukou | kouro | kokuzu | kansei | kakunouko. Its sign is not a link (aria-current).
+ * - current: kuukou | kouro | kokuzu | kansei | koho | kakunouko. Its sign is not a link (aria-current).
  * - mode: public (the default; each member's public address, Kakunouko hidden unless current) or
  *   home (served by Kakunouko: apps at ../<app>/, Kakunouko at ../, Kuukou the public dashboard).
  * - unavailable: space-separated members to hide (never the current one). The bar never probes.
@@ -24,6 +24,7 @@ export const FAMILY = [
     { id: 'kouro', name: 'Kouro', kanji: '航路', publicUrl: 'https://kouro.pages.dev/', homeHref: '../kouro/' },
     { id: 'kokuzu', name: 'Kōkūzu', kanji: '航空図', publicUrl: 'https://kokuzu.pages.dev/', homeHref: '../kokuzu/' },
     { id: 'kansei', name: 'Kansei', kanji: '管制', publicUrl: 'https://kansei-atc.pages.dev/', homeHref: '../kansei/' },
+    { id: 'koho', name: 'Kōhō', kanji: '航法', publicUrl: 'https://koho.pages.dev/', homeHref: '../koho/' },
     { id: 'kakunouko', name: 'Kakunouko', kanji: '格納庫', publicUrl: null, homeHref: '../' },
 ];
 const TAG = 'kk-family-bar';

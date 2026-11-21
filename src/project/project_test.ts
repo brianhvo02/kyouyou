@@ -1,7 +1,7 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import {
   buildProjectJson,
   parseChangelog,
@@ -10,6 +10,7 @@ import {
   projectJsonPlugin,
   ProjectSourceError,
   writeProjectJson,
+  type ProjectId,
   type ProjectMeta,
 } from './project.ts';
 
@@ -256,5 +257,13 @@ describe('project.json writer and plugin', () => {
     const ctx = { emitFile: vi.fn(), error };
     expect(() => callHook(plugin, 'buildStart', ctx)).toThrow(/9\.9\.9/);
     expect(error).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('ProjectId', () => {
+  it('names every app that publishes a project.json, Kōhō included', () => {
+    expectTypeOf<ProjectId>().toEqualTypeOf<'kouro' | 'kokuzu' | 'kansei' | 'koho' | 'kyouyou'>();
+    const koho: ProjectMeta = { id: 'koho', name: 'Kōhō (航法)', summary: 'A demo.', url: 'https://koho.pages.dev/' };
+    expect(buildProjectJson(koho, '0.2.0', { changelog: CHANGELOG, roadmap: '', readme: '' }).id).toBe('koho');
   });
 });

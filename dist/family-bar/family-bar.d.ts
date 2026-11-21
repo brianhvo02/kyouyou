@@ -1,4 +1,4 @@
-export type FamilyMemberId = 'kuukou' | 'kouro' | 'kokuzu' | 'kansei' | 'kakunouko';
+export type FamilyMemberId = 'kuukou' | 'kouro' | 'kokuzu' | 'kansei' | 'koho' | 'kakunouko';
 /** A <kk-family-bar>. It is driven by its attributes; it adds no properties of its own. */
 export interface FamilyBarElement extends HTMLElement {
 }

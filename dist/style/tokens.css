@@ -43,6 +43,10 @@
   --kk-on-kokuzu: #fff;
   --kk-kansei: #1e8a4c;
   --kk-on-kansei: #000;
+  /* Kōhō: provisional until Kōhō's page design. A neutral slate so nothing breaks meanwhile; like
+     the other accents it does not change with the theme. */
+  --kk-koho: #5b6b7a;
+  --kk-on-koho: #fff;
   --kk-kakunouko: #c77700;
   --kk-on-kakunouko: #000;
 
@@ -142,4 +146,5 @@
 :where([data-kk-accent="kouro"]) { --kk-accent: var(--kk-kouro); --kk-on-accent: var(--kk-on-kouro); }
 :where([data-kk-accent="kokuzu"]) { --kk-accent: var(--kk-kokuzu); --kk-on-accent: var(--kk-on-kokuzu); }
 :where([data-kk-accent="kansei"]) { --kk-accent: var(--kk-kansei); --kk-on-accent: var(--kk-on-kansei); }
+:where([data-kk-accent="koho"]) { --kk-accent: var(--kk-koho); --kk-on-accent: var(--kk-on-koho); }
 :where([data-kk-accent="kakunouko"]) { --kk-accent: var(--kk-kakunouko); --kk-on-accent: var(--kk-on-kakunouko); }

@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Plugin } from 'vite';
 
-export type ProjectId = 'kouro' | 'kokuzu' | 'kansei' | 'kyouyou';
+export type ProjectId = 'kouro' | 'kokuzu' | 'kansei' | 'koho' | 'kyouyou';
 
 export interface ChangeSet {
   added: string[];
