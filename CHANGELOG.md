@@ -6,6 +6,12 @@ All notable changes to kyouyou (共有) are recorded here, newest first. The for
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-11-20
+
+### Added
+
+- `kansei-routes`: Kansei's helper lookups (airports, controllers, procedures, minimum sector altitudes) and plan saving as a transport-only Node request handler, built from data (`createKanseiRoutesFromData`) or from an X-Plane folder (`createKanseiRoutes`, which indexes in the background and answers 503 meanwhile). Also exports the file finders (`findAptFiles`, `findDataFile`, `findAtcFile`, `hasCifp`, `readCifpFrom`), `indexAptFiles`, `indexFixes`, `parseAtc` and the types (`Controller` among them), so a host, with or without an X-Plane folder, needs one import.
+
 ## [0.17.0] - 2026-11-20
 
 ### Added

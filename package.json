@@ -1,6 +1,6 @@
 {
   "name": "kyouyou",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Code shared by the Kōkūzu, Kōro and Kansei flight-simulation apps",
   "license": "UNLICENSED",
   "private": true,
@@ -28,6 +28,10 @@
     "./wx/upstream": {
       "types": "./dist/wx/upstream.d.ts",
       "default": "./dist/wx/upstream.js"
+    },
+    "./kansei-routes": {
+      "types": "./dist/kansei/routes.d.ts",
+      "default": "./dist/kansei/routes.js"
     },
     "./kuukou/fake-server": {
       "types": "./dist/kuukou/fake-server.d.ts",
