@@ -117,6 +117,10 @@
       "types": "./dist/faa/airspace.d.ts",
       "default": "./dist/faa/airspace.js"
     },
+    "./arinc424/records": {
+      "types": "./dist/arinc424/records.d.ts",
+      "default": "./dist/arinc424/records.js"
+    },
     "./project": {
       "types": "./dist/project/project.d.ts",
       "default": "./dist/project/project.js"
