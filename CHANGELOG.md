@@ -6,6 +6,8 @@ All notable changes to kyouyou (共有) are recorded here, newest first. The for
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-11-20
+
 ### Added
 
 - `project` and `family-bar`: Kōhō (航法) joins the family as `koho`, a `ProjectId` and a family-bar member between Kansei and Kakunouko (public address `https://koho.pages.dev/`, home path `../koho/`), with the accent tokens `--kk-koho` and `--kk-on-koho` (a provisional slate until Kōhō's page design) and `data-kk-accent="koho"`. Hosts upgrading should add `koho` to the family bar's `unavailable` until Kōhō is live, or the bar links an address with nothing behind it yet. The KK Mincho subset now carries 法.
