@@ -7,10 +7,13 @@ import {describe, expect, test} from 'vitest';
 const here = dirname(fileURLToPath(import.meta.url));
 const read = (name: string): string => readFileSync(join(here, name), 'utf8');
 
-/** The kanji of the family's names (拠点空港, 航路, 航空図, 管制, 格納庫, 共有), once each. */
-const FAMILY_KANJI = [...new Set('拠点空港航路図管制法格納庫共有')];
+/** The kanji of the family's names (拠点空港, 航路, 航空図, 管制, 航法, 格納庫, 共有, 自動操縦), once each. */
+const FAMILY_KANJI = [...new Set('拠点空港航路図管制法格納庫共有自動操縦')];
 
-const ACCENTS = ['kuukou', 'kouro', 'kokuzu', 'kansei', 'koho', 'kakunouko'] as const;
+const ACCENTS = ['kuukou', 'kouro', 'koukuuzu', 'kansei', 'kouhou', 'kakunouko'] as const;
+
+/** Deprecated accent names (removed in the next release) and the accents they now mean. */
+const DEPRECATED_ACCENTS = {kokuzu: 'koukuuzu', koho: 'kouhou'} as const;
 
 /** Properties that change with the theme: every dark selector defines each of them. */
 const THEMED = ['--kk-ground', '--kk-surface', '--kk-ink', '--kk-ink-muted', '--kk-rule', '--kk-rule-strong', '--kk-accent-text'];
@@ -94,7 +97,7 @@ describe('tokens.css', () => {
     expect(t.get('--kk-sign-yellow')).toBe('#f2c500');
     expect(t.get('--kk-sign-black')).toBe('#000');
     expect(t.get('--kk-kouro')).toBe('#c2189b');
-    expect(t.get('--kk-kokuzu')).toBe('#0a7ea4');
+    expect(t.get('--kk-koukuuzu')).toBe('#0a7ea4');
     expect(t.get('--kk-kansei')).toBe('#1e8a4c');
     expect(t.get('--kk-kakunouko')).toBe('#c77700');
     expect(t.get('--kk-kuukou')).toBe('var(--kk-sign-yellow)');
@@ -140,6 +143,18 @@ describe('tokens.css', () => {
         expect.soft(b.get('--kk-accent'), a).toBe(`var(--kk-${a})`);
         expect.soft(b.get('--kk-on-accent'), a).toBe(`var(--kk-on-${a})`);
       }
+    });
+
+    test('keeps the deprecated accents kokuzu and koho as aliases of koukuuzu and kouhou', () => {
+      const t = light();
+      for (const [old, now] of Object.entries(DEPRECATED_ACCENTS)) {
+        expect.soft(t.get(`--kk-${old}`), old).toBe(`var(--kk-${now})`);
+        expect.soft(t.get(`--kk-on-${old}`), old).toBe(`var(--kk-on-${now})`);
+        const b = block(tokens(), `:where([data-kk-accent="${old}"])`);
+        expect.soft(b.get('--kk-accent'), old).toBe(`var(--kk-${now})`);
+        expect.soft(b.get('--kk-on-accent'), old).toBe(`var(--kk-on-${now})`);
+      }
+      expect(tokens()).toMatch(/deprecated, removed in the next release/);
     });
   });
 });
@@ -500,7 +515,7 @@ describe('the Mincho subset', () => {
 
   test('uses the kanji list the script builds from', () => {
     const script = readFileSync(join(here, '..', '..', 'scripts', 'subset-jp.mjs'), 'utf8');
-    expect(script).toContain("'拠点空港航路図管制法格納庫共有'");
+    expect(script).toContain("'拠点空港航路図管制法格納庫共有自動操縦'");
   });
 });
 

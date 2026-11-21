@@ -1,4 +1,4 @@
-/* Kyoten Kuukou (拠点空港) family tokens: airside signs on chart paper.
+/* Kyoten Kūkō (拠点空港) family tokens: airside signs on chart paper.
    Every name starts with --kk- so it never meets an app's own variables.
 
    An app picks its accent with one line on :root:
@@ -11,7 +11,7 @@
 
    An app that fills a control with its accent also sets --kk-on-accent: var(--kk-on-kouro) for
    the text on that fill. A part of a page in another member's accent says so with
-   data-kk-accent="kokuzu" (see the end of this file).
+   data-kk-accent="koukuuzu" (see the end of this file).
 
    Themes: light by default; dark under prefers-color-scheme, unless the root says
    data-theme="light"; and dark whenever the root says data-theme="dark". The kit reads no storage.
@@ -39,16 +39,21 @@
   --kk-on-kuukou: var(--kk-sign-black);
   --kk-kouro: #c2189b;
   --kk-on-kouro: #fff;
-  --kk-kokuzu: #0a7ea4;
-  --kk-on-kokuzu: #fff;
+  --kk-koukuuzu: #0a7ea4;
+  --kk-on-koukuuzu: #fff;
   --kk-kansei: #1e8a4c;
   --kk-on-kansei: #000;
   /* Kōhō: provisional until Kōhō's page design. A neutral slate so nothing breaks meanwhile; like
      the other accents it does not change with the theme. */
-  --kk-koho: #5b6b7a;
-  --kk-on-koho: #fff;
+  --kk-kouhou: #5b6b7a;
+  --kk-on-kouhou: #fff;
   --kk-kakunouko: #c77700;
   --kk-on-kakunouko: #000;
+  /* The old names of Kōkūzu's and Kōhō's accents: deprecated, removed in the next release. */
+  --kk-kokuzu: var(--kk-koukuuzu);
+  --kk-on-kokuzu: var(--kk-on-koukuuzu);
+  --kk-koho: var(--kk-kouhou);
+  --kk-on-koho: var(--kk-on-kouhou);
 
   --kk-accent: var(--kk-kuukou);
   --kk-on-accent: var(--kk-on-kuukou);
@@ -144,7 +149,11 @@
 
 :where([data-kk-accent="kuukou"]) { --kk-accent: var(--kk-kuukou); --kk-on-accent: var(--kk-on-kuukou); }
 :where([data-kk-accent="kouro"]) { --kk-accent: var(--kk-kouro); --kk-on-accent: var(--kk-on-kouro); }
-:where([data-kk-accent="kokuzu"]) { --kk-accent: var(--kk-kokuzu); --kk-on-accent: var(--kk-on-kokuzu); }
+:where([data-kk-accent="koukuuzu"]) { --kk-accent: var(--kk-koukuuzu); --kk-on-accent: var(--kk-on-koukuuzu); }
 :where([data-kk-accent="kansei"]) { --kk-accent: var(--kk-kansei); --kk-on-accent: var(--kk-on-kansei); }
-:where([data-kk-accent="koho"]) { --kk-accent: var(--kk-koho); --kk-on-accent: var(--kk-on-koho); }
+:where([data-kk-accent="kouhou"]) { --kk-accent: var(--kk-kouhou); --kk-on-accent: var(--kk-on-kouhou); }
 :where([data-kk-accent="kakunouko"]) { --kk-accent: var(--kk-kakunouko); --kk-on-accent: var(--kk-on-kakunouko); }
+
+/* The old accent names: deprecated, removed in the next release. */
+:where([data-kk-accent="kokuzu"]) { --kk-accent: var(--kk-koukuuzu); --kk-on-accent: var(--kk-on-koukuuzu); }
+:where([data-kk-accent="koho"]) { --kk-accent: var(--kk-kouhou); --kk-on-accent: var(--kk-on-kouhou); }

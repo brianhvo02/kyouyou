@@ -1,4 +1,4 @@
-// X-Plane's v1100 `.fms` flight plan: reading one, and writing one. Kouro writes them, Kōkūzu and
+// X-Plane's v1100 `.fms` flight plan: reading one, and writing one. Kōro writes them, Kōkūzu and
 // Kansei read them, so both ends live here and a round-trip test holds them together.
 const KINDS = { '1': 'airport', '2': 'ndb', '3': 'vor', '11': 'fix' };
 const TYPE_CODE = { airport: 1, ndb: 2, vor: 3, fix: 11 };

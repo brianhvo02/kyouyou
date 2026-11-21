@@ -1,4 +1,4 @@
-/* Kyoten Kuukou (拠点空港) family faces, all served from beside this file.
+/* Kyoten Kūkō (拠点空港) family faces, all served from beside this file.
    The URLs are relative so the app's bundler copies and hashes the font files; a bundler that
    cannot load .woff2 fails the build instead of shipping a page that falls back silently.
    Licences: fonts/B612-OFL.txt, fonts/B612-Mono-OFL.txt, fonts/NotoSerifJP-OFL.txt (SIL OFL 1.1). */
@@ -62,5 +62,5 @@
   font-weight: 400 700;
   font-style: normal;
   font-display: swap;
-  unicode-range: U+5171, U+5236, U+56F3, U+5EAB, U+62E0, U+6709, U+683C, U+6CD5, U+6E2F, U+70B9, U+7A7A, U+7BA1, U+7D0D, U+822A, U+8DEF;
+  unicode-range: U+5171, U+5236, U+52D5, U+56F3, U+5EAB, U+62E0, U+64CD, U+6709, U+683C, U+6CD5, U+6E2F, U+70B9, U+7A7A, U+7BA1, U+7D0D, U+7E26, U+81EA, U+822A, U+8DEF;
 }

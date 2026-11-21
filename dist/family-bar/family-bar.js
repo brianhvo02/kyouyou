@@ -1,15 +1,18 @@
 /**
- * The Kyoten Kuukou family bar: a row of airfield taxiway signs along the top of every surface.
+ * The Kyoten Kūkō family bar: a row of airfield taxiway signs along the top of every surface.
  * The surface you are on is the location sign (sign yellow on black, yellow frame); every other
  * member is a direction sign (black on sign yellow) with an arrow pointing along the row.
  *
  *   <kk-family-bar current="kouro" mode="public"></kk-family-bar>
  *
  * Attributes:
- * - current: kuukou | kouro | kokuzu | kansei | koho | kakunouko. Its sign is not a link (aria-current).
- * - mode: public (the default; each member's public address, Kakunouko hidden unless current) or
- *   home (served by Kakunouko: apps at ../<app>/, Kakunouko at ../, Kuukou the public dashboard).
+ * - current: kuukou | kouro | koukuuzu | kansei | kouhou | kakunouko. Its sign is not a link (aria-current).
+ * - mode: public (the default; each member's public address, Kakunōko hidden unless current) or
+ *   home (served by Kakunōko: apps at ../<app>/, Kakunōko at ../, Kyoten Kūkō the public dashboard).
  * - unavailable: space-separated members to hide (never the current one). The bar never probes.
+ *
+ * Deprecated, removed in the next release: `kokuzu` and `koho` are still accepted in `current` and
+ * `unavailable` and mean `koukuuzu` and `kouhou` (see DEPRECATED_MEMBER_IDS).
  * - compact: only the location sign, which opens the others as a menu (for a host toolbar).
  *   Under 600 px of viewport every bar is shown this way.
  *
@@ -18,14 +21,23 @@
  */
 import { FAMILY_BAR_CSS } from "./family-bar-css.js";
 import { placeMenu } from "./place-menu.js";
+/**
+ * Old member ids and the ids they now mean. Deprecated, removed in the next release: the bar accepts
+ * them in `current` and `unavailable` so apps can move one at a time.
+ */
+const DEPRECATED_MEMBER_IDS = { kokuzu: 'koukuuzu', koho: 'kouhou' };
+/** A member id from an attribute, with a deprecated id read as its new one. */
+function memberId(id) {
+    return Object.hasOwn(DEPRECATED_MEMBER_IDS, id) ? DEPRECATED_MEMBER_IDS[id] : id;
+}
 /** The family, in the bar's order. */
 export const FAMILY = [
-    { id: 'kuukou', name: 'Kuukou', kanji: '拠点空港', publicUrl: 'https://kyotenkuukou.pages.dev/', homeHref: 'https://kyotenkuukou.pages.dev/' },
-    { id: 'kouro', name: 'Kouro', kanji: '航路', publicUrl: 'https://kouro.pages.dev/', homeHref: '../kouro/' },
-    { id: 'kokuzu', name: 'Kōkūzu', kanji: '航空図', publicUrl: 'https://kokuzu.pages.dev/', homeHref: '../kokuzu/' },
+    { id: 'kuukou', name: 'Kūkō', kanji: '拠点空港', publicUrl: 'https://kyotenkuukou.pages.dev/', homeHref: 'https://kyotenkuukou.pages.dev/' },
+    { id: 'kouro', name: 'Kōro', kanji: '航路', publicUrl: 'https://kouro.pages.dev/', homeHref: '../kouro/' },
+    { id: 'koukuuzu', name: 'Kōkūzu', kanji: '航空図', publicUrl: 'https://koukuuzu.pages.dev/', homeHref: '../koukuuzu/' },
     { id: 'kansei', name: 'Kansei', kanji: '管制', publicUrl: 'https://kansei-atc.pages.dev/', homeHref: '../kansei/' },
-    { id: 'koho', name: 'Kōhō', kanji: '航法', publicUrl: 'https://koho.pages.dev/', homeHref: '../koho/' },
-    { id: 'kakunouko', name: 'Kakunouko', kanji: '格納庫', publicUrl: null, homeHref: '../' },
+    { id: 'kouhou', name: 'Kōhō', kanji: '航法', publicUrl: 'https://kouhou.pages.dev/', homeHref: '../kouhou/' },
+    { id: 'kakunouko', name: 'Kakunōko', kanji: '格納庫', publicUrl: null, homeHref: '../' },
 ];
 const TAG = 'kk-family-bar';
 const NARROW = '(max-width: 599.98px)';
@@ -106,7 +118,7 @@ function createElementClass() {
                 this.#render();
         }
         get #current() {
-            const id = this.getAttribute('current');
+            const id = memberId(this.getAttribute('current') ?? '');
             return FAMILY.find((m) => m.id === id);
         }
         get #mode() {
@@ -119,7 +131,7 @@ function createElementClass() {
         #members() {
             const current = this.#current;
             const mode = this.#mode;
-            const unavailable = new Set((this.getAttribute('unavailable') ?? '').split(/\s+/).filter(Boolean));
+            const unavailable = new Set((this.getAttribute('unavailable') ?? '').split(/\s+/).filter(Boolean).map(memberId));
             return FAMILY.filter((m) => {
                 if (m === current)
                     return true;
@@ -147,7 +159,7 @@ function createElementClass() {
             const at = current ? FAMILY.indexOf(current) : -1;
             const arrowFor = (m) => (FAMILY.indexOf(m) < at ? 'left' : 'right');
             const collapsed = this.#collapsed;
-            const nav = el('nav', { class: collapsed ? 'strip folded' : 'strip', 'aria-label': 'Kyoten Kuukou apps' });
+            const nav = el('nav', { class: collapsed ? 'strip folded' : 'strip', 'aria-label': 'Kyoten Kūkō apps' });
             if (!collapsed) {
                 const array = el('ul', { class: 'array' });
                 for (const m of members) {
@@ -171,7 +183,7 @@ function createElementClass() {
                     button.append(...label(current));
                 }
                 else {
-                    button.append(el('span', { class: 'name' }, 'Kyoten Kuukou'));
+                    button.append(el('span', { class: 'name' }, 'Kyoten Kūkō'));
                 }
                 button.append(el('span', { class: 'visually-hidden' }, ', other apps'), icon('caret', CARET));
                 button.addEventListener('click', () => this.#setOpen(!this.#open));

@@ -2,7 +2,7 @@ import {describe, expect, test} from 'vitest';
 import {airwayRuns, parseAwySegments} from './awy.ts';
 
 // Made-up airway segments in the layout of X-Plane's earth_awy.dat. Nothing here is copied from real
-// data. Cases follow Kouro's airway reader tests.
+// data. Cases follow Kōro's airway reader tests.
 const file = (rows: string[], version = '1100') => ['I', `${version} Version - made-up`, '', ...rows, '99', ''].join('\n');
 const seg = (a: string, b: string, names = 'J1', dir = 'N', layer = '2') => `${a} ZZ 11 ${b} ZZ 11 ${dir} ${layer} 180 450 ${names}`;
 const runs = (rows: string[]) => airwayRuns(parseAwySegments(file(rows)));

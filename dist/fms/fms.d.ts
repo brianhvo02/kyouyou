@@ -6,7 +6,7 @@ export interface FmsPoint {
     lon: number;
     /** How the point is reached: an airway name, DRCT, or ADEP / ADES for the two airports. */
     via: string;
-    /** The altitude on the point's line, feet. Kouro writes 0 for the airports and the initial cruise altitude en route. */
+    /** The altitude on the point's line, feet. Kōro writes 0 for the airports and the initial cruise altitude en route. */
     altitudeFt: number;
 }
 export interface FmsProcedure {

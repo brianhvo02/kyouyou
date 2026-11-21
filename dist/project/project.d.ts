@@ -1,5 +1,12 @@
 import type { Plugin } from 'vite';
-export type ProjectId = 'kouro' | 'kokuzu' | 'kansei' | 'koho' | 'kyouyou';
+/**
+ * The apps that publish a project.json. `kokuzu`, `koho` and `kyouyou` are the old ids of Kōkūzu, Kōhō
+ * and Kyōyū: deprecated, removed in the next release (use `koukuuzu`, `kouhou` and `kyouyuu`). They are
+ * still accepted and written out as given.
+ */
+export type ProjectId = 'kouro' | 'koukuuzu' | 'kansei' | 'kouhou' | 'kyouyuu' | DeprecatedProjectId;
+/** Deprecated, removed in the next release: the old ids of Kōkūzu, Kōhō and Kyōyū. */
+export type DeprecatedProjectId = 'kokuzu' | 'koho' | 'kyouyou';
 export interface ChangeSet {
     added: string[];
     changed: string[];

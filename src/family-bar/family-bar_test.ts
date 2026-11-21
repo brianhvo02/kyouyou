@@ -61,16 +61,16 @@ describe('defineFamilyBar', () => {
 describe('the signs', () => {
   test('six signs in order, each with its name and kanji marked as Japanese', () => {
     const el = bar({current: 'kouro', mode: 'home'});
-    expect(names(shown(el))).toEqual(['Kuukou', 'Kouro', 'Kōkūzu', 'Kansei', 'Kōhō', 'Kakunouko']);
+    expect(names(shown(el))).toEqual(['Kūkō', 'Kōro', 'Kōkūzu', 'Kansei', 'Kōhō', 'Kakunōko']);
     const kanji = shown(el).map((s) => s.querySelector('.kk-jp')!);
     expect(kanji.map((k) => k.textContent)).toEqual(['拠点空港', '航路', '航空図', '管制', '航法', '格納庫']);
     expect(kanji.every((k) => k.getAttribute('lang') === 'ja')).toBe(true);
-    expect(FAMILY.map((m) => m.id)).toEqual(['kuukou', 'kouro', 'kokuzu', 'kansei', 'koho', 'kakunouko']);
+    expect(FAMILY.map((m) => m.id)).toEqual(['kuukou', 'kouro', 'koukuuzu', 'kansei', 'kouhou', 'kakunouko']);
   });
 
   test('sits in a labelled navigation landmark', () => {
     const el = bar({current: 'kouro'});
-    expect(root(el).querySelector('nav')?.getAttribute('aria-label')).toBe('Kyoten Kuukou apps');
+    expect(root(el).querySelector('nav')?.getAttribute('aria-label')).toBe('Kyoten Kūkō apps');
   });
 
   test('the current member is the location sign: aria-current, not a link', () => {
@@ -85,23 +85,23 @@ describe('the signs', () => {
   });
 
   test('direction signs point the way: arrows left before the location sign, right after it', () => {
-    const el = bar({current: 'kokuzu', mode: 'public'});
+    const el = bar({current: 'koukuuzu', mode: 'public'});
     const dirs = shown(el).filter((s) => s.classList.contains('direction'));
     expect(dirs.map((s) => [s.dataset.member, s.dataset.arrow])).toEqual([
-      ['kuukou', 'left'], ['kouro', 'left'], ['kansei', 'right'], ['koho', 'right'],
+      ['kuukou', 'left'], ['kouro', 'left'], ['kansei', 'right'], ['kouhou', 'right'],
     ]);
     for (const s of dirs) expect(s.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
   });
 });
 
 describe('links', () => {
-  test('public mode: each public address; Kakunouko hidden', () => {
+  test('public mode: each public address; Kakunōko hidden', () => {
     const el = bar({current: 'kouro', mode: 'public'});
     expect(link(el, 'kuukou')).toBe('https://kyotenkuukou.pages.dev/');
-    expect(link(el, 'kokuzu')).toBe('https://kokuzu.pages.dev/');
+    expect(link(el, 'koukuuzu')).toBe('https://koukuuzu.pages.dev/');
     expect(link(el, 'kansei')).toBe('https://kansei-atc.pages.dev/');
-    expect(link(el, 'koho')).toBe('https://koho.pages.dev/');
-    expect(names(shown(el))).toEqual(['Kuukou', 'Kouro', 'Kōkūzu', 'Kansei', 'Kōhō']);
+    expect(link(el, 'kouhou')).toBe('https://kouhou.pages.dev/');
+    expect(names(shown(el))).toEqual(['Kūkō', 'Kōro', 'Kōkūzu', 'Kansei', 'Kōhō']);
     const fromKansei = bar({current: 'kansei', mode: 'public'});
     expect(link(fromKansei, 'kouro')).toBe('https://kouro.pages.dev/');
   });
@@ -109,21 +109,21 @@ describe('links', () => {
   test('public is the default mode', () => {
     const el = bar({current: 'kouro'});
     expect(link(el, 'kansei')).toBe('https://kansei-atc.pages.dev/');
-    expect(names(shown(el))).not.toContain('Kakunouko');
+    expect(names(shown(el))).not.toContain('Kakunōko');
   });
 
-  test('public mode shows Kakunouko when it is current', () => {
+  test('public mode shows Kakunōko when it is current', () => {
     const el = bar({current: 'kakunouko', mode: 'public'});
-    expect(names(shown(el))).toEqual(['Kuukou', 'Kouro', 'Kōkūzu', 'Kansei', 'Kōhō', 'Kakunouko']);
-    expect(root(el).querySelector('[aria-current="page"]')!.textContent).toContain('Kakunouko');
+    expect(names(shown(el))).toEqual(['Kūkō', 'Kōro', 'Kōkūzu', 'Kansei', 'Kōhō', 'Kakunōko']);
+    expect(root(el).querySelector('[aria-current="page"]')!.textContent).toContain('Kakunōko');
   });
 
-  test('home mode: sibling paths, Kakunouko its home page, Kuukou the public dashboard', () => {
+  test('home mode: sibling paths, Kakunōko its home page, Kūkō the public dashboard', () => {
     const el = bar({current: 'kouro', mode: 'home'});
     expect(link(el, 'kuukou')).toBe('https://kyotenkuukou.pages.dev/');
-    expect(link(el, 'kokuzu')).toBe('../kokuzu/');
+    expect(link(el, 'koukuuzu')).toBe('../koukuuzu/');
     expect(link(el, 'kansei')).toBe('../kansei/');
-    expect(link(el, 'koho')).toBe('../koho/');
+    expect(link(el, 'kouhou')).toBe('../kouhou/');
     expect(link(el, 'kakunouko')).toBe('../');
     const fromHome = bar({current: 'kakunouko', mode: 'home'});
     expect(link(fromHome, 'kouro')).toBe('../kouro/');
@@ -131,38 +131,38 @@ describe('links', () => {
 
   test('home-mode paths resolve to siblings from /kouro/', () => {
     const base = 'http://home.example/kouro/';
-    expect(new URL('../kokuzu/', base).pathname).toBe('/kokuzu/');
+    expect(new URL('../koukuuzu/', base).pathname).toBe('/koukuuzu/');
     expect(new URL('../', base).pathname).toBe('/');
   });
 });
 
 describe('Kōhō', () => {
-  test('sits after Kansei and before Kakunouko, its public address public, its home path a sibling', () => {
-    const el = bar({current: 'koho', mode: 'public'});
+  test('sits after Kansei and before Kakunōko, its public address public, its home path a sibling', () => {
+    const el = bar({current: 'kouhou', mode: 'public'});
     expect(root(el).querySelector('[aria-current="page"]')!.textContent).toContain('Kōhō');
-    expect(link(el, 'koho')).toBeNull();
+    expect(link(el, 'kouhou')).toBeNull();
     const dirs = shown(el).filter((s) => s.classList.contains('direction'));
     expect(dirs.map((s) => [s.dataset.member, s.dataset.arrow])).toEqual([
-      ['kuukou', 'left'], ['kouro', 'left'], ['kokuzu', 'left'], ['kansei', 'left'],
+      ['kuukou', 'left'], ['kouro', 'left'], ['koukuuzu', 'left'], ['kansei', 'left'],
     ]);
-    const home = bar({current: 'koho', mode: 'home'});
+    const home = bar({current: 'kouhou', mode: 'home'});
     expect(link(home, 'kakunouko')).toBe('../');
     expect(root(home).querySelector('a.sign[data-member="kakunouko"]')!.getAttribute('data-arrow')).toBe('right');
-    expect(FAMILY.find((m) => m.id === 'koho')).toEqual({
-      id: 'koho', name: 'Kōhō', kanji: '航法', publicUrl: 'https://koho.pages.dev/', homeHref: '../koho/',
+    expect(FAMILY.find((m) => m.id === 'kouhou')).toEqual({
+      id: 'kouhou', name: 'Kōhō', kanji: '航法', publicUrl: 'https://kouhou.pages.dev/', homeHref: '../kouhou/',
     });
   });
 
-  test('hidden by unavailable="koho"', () => {
-    const el = bar({current: 'kouro', unavailable: 'koho'});
-    expect(link(el, 'koho')).toBeNull();
+  test('hidden by unavailable="kouhou"', () => {
+    const el = bar({current: 'kouro', unavailable: 'kouhou'});
+    expect(link(el, 'kouhou')).toBeNull();
   });
 });
 
 describe('unavailable members', () => {
   test('are hidden, in either mode', () => {
-    const el = bar({current: 'kouro', mode: 'home', unavailable: 'kansei  kokuzu'});
-    expect(names(shown(el))).toEqual(['Kuukou', 'Kouro', 'Kōhō', 'Kakunouko']);
+    const el = bar({current: 'kouro', mode: 'home', unavailable: 'kansei  koukuuzu'});
+    expect(names(shown(el))).toEqual(['Kūkō', 'Kōro', 'Kōhō', 'Kakunōko']);
     expect(link(el, 'kansei')).toBeNull();
   });
 
@@ -172,10 +172,32 @@ describe('unavailable members', () => {
   });
 });
 
+describe('deprecated ids (kokuzu, koho), accepted for one release', () => {
+  test('current="kokuzu" is Kōkūzu and current="koho" is Kōhō', () => {
+    const k = bar({current: 'kokuzu', mode: 'public'});
+    const here = root(k).querySelector('[aria-current="page"]')!;
+    expect(here.getAttribute('data-member')).toBe('koukuuzu');
+    expect(here.textContent).toContain('Kōkūzu');
+    const h = bar({current: 'koho', mode: 'home'});
+    expect(root(h).querySelector('[aria-current="page"]')!.getAttribute('data-member')).toBe('kouhou');
+    expect(link(h, 'kouro')).toBe('../kouro/');
+  });
+
+  test('unavailable="kokuzu koho" hides Kōkūzu and Kōhō', () => {
+    const el = bar({current: 'kouro', mode: 'home', unavailable: 'kokuzu koho'});
+    expect(names(shown(el))).toEqual(['Kūkō', 'Kōro', 'Kansei', 'Kakunōko']);
+  });
+
+  test('the old ids are not members', () => {
+    expect(FAMILY.map((m) => m.id)).not.toContain('kokuzu');
+    expect(FAMILY.map((m) => m.id)).not.toContain('koho');
+  });
+});
+
 describe('attribute changes re-render', () => {
   test('current, mode and unavailable', () => {
     const el = bar({current: 'kouro', mode: 'public'});
-    el.setAttribute('current', 'kokuzu');
+    el.setAttribute('current', 'koukuuzu');
     expect(root(el).querySelector('[aria-current="page"]')!.textContent).toContain('Kōkūzu');
     expect(link(el, 'kouro')).toBe('https://kouro.pages.dev/');
     el.setAttribute('mode', 'home');
@@ -198,17 +220,17 @@ describe('the collapsed bar (compact, or narrow)', () => {
     const button = toggle(el)!;
     expect(button).not.toBeNull();
     expect(button.getAttribute('aria-current')).toBe('page');
-    expect(button.textContent).toContain('Kouro');
+    expect(button.textContent).toContain('Kōro');
     expect(button.querySelector('.kk-jp')!.textContent).toBe('航路');
     expect(button.getAttribute('aria-expanded')).toBe('false');
     expect(menu(el).hidden).toBe(true);
-    expect(names(shown(el))).toEqual(['Kouro']);
+    expect(names(shown(el))).toEqual(['Kōro']);
 
     button.click();
     expect(button.getAttribute('aria-expanded')).toBe('true');
     expect(menu(el).hidden).toBe(false);
     expect(button.getAttribute('aria-controls')).toBe(menu(el).id);
-    expect(names(shown(el))).toEqual(['Kouro', 'Kuukou', 'Kōkūzu', 'Kansei', 'Kōhō', 'Kakunouko']);
+    expect(names(shown(el))).toEqual(['Kōro', 'Kūkō', 'Kōkūzu', 'Kansei', 'Kōhō', 'Kakunōko']);
     expect(link(el, 'kansei')).toBe('../kansei/');
 
     button.click();
@@ -278,7 +300,7 @@ describe('the collapsed bar (compact, or narrow)', () => {
     expect(names(shown(el))).toEqual(['Kansei']);
     width.set(false);
     expect(toggle(el)).toBeNull();
-    expect(names(shown(el))).toEqual(['Kuukou', 'Kouro', 'Kōkūzu', 'Kansei', 'Kōhō']);
+    expect(names(shown(el))).toEqual(['Kūkō', 'Kōro', 'Kōkūzu', 'Kansei', 'Kōhō']);
     width.set(true);
     expect(toggle(el)).not.toBeNull();
   });

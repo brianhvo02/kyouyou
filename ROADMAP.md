@@ -1,6 +1,6 @@
 # Roadmap
 
-What is planned for kyouyou (共有). Items move to the [changelog](CHANGELOG.md) when released.
+What is planned for Kyōyū (共有). Items move to the [changelog](CHANGELOG.md) when released.
 
 ## Now
 
@@ -14,7 +14,7 @@ What is planned for kyouyou (共有). Items move to the [changelog](CHANGELOG.md
 ## Later
 
 - Reading navigation data from a user's own licensed database, kept on their device.
-- Shared weather caching for the Kuukou server.
+- Shared weather caching for Kakunōko.
 
 ## Not planned
 

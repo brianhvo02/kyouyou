@@ -1,4 +1,4 @@
-export type FamilyMemberId = 'kuukou' | 'kouro' | 'kokuzu' | 'kansei' | 'koho' | 'kakunouko';
+export type FamilyMemberId = 'kuukou' | 'kouro' | 'koukuuzu' | 'kansei' | 'kouhou' | 'kakunouko';
 /** A <kk-family-bar>. It is driven by its attributes; it adds no properties of its own. */
 export interface FamilyBarElement extends HTMLElement {
 }
@@ -14,7 +14,7 @@ export interface FamilyMember {
     readonly name: string;
     /** The Japanese name. */
     readonly kanji: string;
-    /** The public address, or null (Kakunouko runs only on the owner's own machine). */
+    /** The public address, or null (Kakunōko runs only on the owner's own machine). */
     readonly publicUrl: string | null;
     /** The link in home mode, relative to an app served at /<app>/. */
     readonly homeHref: string;

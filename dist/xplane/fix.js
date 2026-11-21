@@ -1,4 +1,4 @@
-// Reader for X-Plane's earth_fix.dat (specs XP FIX1101 and XP FIX1200). Based on Kouro's reader, with
+// Reader for X-Plane's earth_fix.dat (specs XP FIX1101 and XP FIX1200). Based on Kōro's reader, with
 // its agreement. Row: lat, lon, ident, terminal airport or ENRT, ICAO region, and in 1200 the waypoint
 // type (an integer) and a name. Never throws: malformed rows are skipped; an unsupported version gives
 // no fixes. Fixes are keyed by ident + region (the same ident is reused in other regions).

@@ -307,7 +307,7 @@ main h3 { margin-top: var(--kk-space-5); }
 }
 .sig p { margin: 0; }
 
-/* Kouro: the flight computer, the active route in magenta. */
+/* Kōro: the flight computer, the active route in magenta. */
 .fmc { background: var(--kk-ground); border: 1px solid var(--kk-rule); }
 .fmc svg { display: block; width: 100%; height: 4rem; }
 .fmc .route { fill: none; stroke: var(--kk-kouro); stroke-width: 2.5; vector-effect: non-scaling-stroke; }
@@ -327,9 +327,9 @@ main h3 { margin-top: var(--kk-space-5); }
 /* Kōkūzu: chart paper with its chart tabs in cyan. */
 .chart {
   background:
-    repeating-linear-gradient(0deg, transparent 0 11px, color-mix(in oklab, var(--kk-kokuzu) 14%, transparent) 11px 12px),
+    repeating-linear-gradient(0deg, transparent 0 11px, color-mix(in oklab, var(--kk-koukuuzu) 14%, transparent) 11px 12px),
     var(--kk-surface);
-  border: 1px solid color-mix(in oklab, var(--kk-kokuzu) 30%, var(--kk-rule));
+  border: 1px solid color-mix(in oklab, var(--kk-koukuuzu) 30%, var(--kk-rule));
 }
 .tabs { display: flex; gap: var(--kk-space-1); margin-bottom: var(--kk-space-3); }
 .tabs button {
@@ -370,8 +370,8 @@ main h3 { margin-top: var(--kk-space-5); }
 
 /* Kōhō: the cycle-to-cycle ledger in slate. */
 .ledger {
-  background: color-mix(in oklab, var(--kk-koho) 7%, var(--kk-surface));
-  border: 1px solid color-mix(in oklab, var(--kk-koho) 35%, var(--kk-rule));
+  background: color-mix(in oklab, var(--kk-kouhou) 7%, var(--kk-surface));
+  border: 1px solid color-mix(in oklab, var(--kk-kouhou) 35%, var(--kk-rule));
 }
 .ledger .cycles {
   margin-bottom: var(--kk-space-2);
@@ -386,12 +386,12 @@ main h3 { margin-top: var(--kk-space-5); }
   display: grid;
   grid-template-columns: 1.25rem minmax(0, 1fr) auto;
   padding-block: var(--kk-space-1);
-  border-top: 1px solid color-mix(in oklab, var(--kk-koho) 25%, var(--kk-rule));
+  border-top: 1px solid color-mix(in oklab, var(--kk-kouhou) 25%, var(--kk-rule));
 }
 .changes .mark { font-family: var(--kk-font-figures); font-weight: 700; color: var(--kk-accent-text); }
 .changes .kk-figures { font-weight: 700; }
 
-/* Kakunouko: the hangar status in amber. */
+/* Kakunōko: the hangar status in amber. */
 .hangar {
   background: color-mix(in oklab, var(--kk-kakunouko) 8%, var(--kk-surface));
   border: 1px solid color-mix(in oklab, var(--kk-kakunouko) 35%, var(--kk-rule));
@@ -421,7 +421,7 @@ main h3 { margin-top: var(--kk-space-5); }
   background: var(--kk-kansei);
 }
 
-/* Kuukou: the departures board, sign yellow on black. */
+/* Kūkō: the departures board, sign yellow on black. */
 .board {
   background: var(--kk-sign-black);
   color: var(--kk-sign-yellow);

@@ -187,7 +187,7 @@ export function writeProjectJson(meta, root, outFile) {
 export function projectJsonPlugin(meta, root = process.cwd()) {
     let source = '';
     return {
-        name: 'kyouyou-project-json',
+        name: 'kyouyuu-project-json',
         config() {
             return { define: { __PROJECT_VERSION__: JSON.stringify(readVersion(root)) } };
         },

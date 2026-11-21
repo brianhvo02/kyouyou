@@ -3,10 +3,10 @@ import {writeProjectJson} from '../dist/project/project.js';
 
 writeProjectJson(
   {
-    id: 'kyouyou',
-    name: 'kyouyou (共有)',
-    summary: 'Code shared by the Kuukou flight-simulation apps',
-    url: 'https://github.com/brianhvo02/kyouyou',
+    id: 'kyouyuu',
+    name: 'Kyōyū (共有)',
+    summary: 'Code shared by the Kyoten Kūkō flight-simulation apps',
+    url: 'https://github.com/brianhvo02/kyouyuu',
   },
   process.cwd(),
   'project.json',

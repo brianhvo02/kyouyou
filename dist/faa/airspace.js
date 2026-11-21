@@ -1,6 +1,6 @@
 // Reader for restrictive airspace in ARINC 424-18: section U, subsection R ("UR") records, 132 columns a
 // line, as in the FAA's CIFP file FAACIFP18 (US special-use airspace) and in any file with that layout.
-// It gives each area the shape `kyouyou/xplane/airspace` reads from X-Plane's airspace.txt, so the same
+// It gives each area the shape `kyouyuu/xplane/airspace` reads from X-Plane's airspace.txt, so the same
 // checks (`airspacesAt`) work on both, plus what the ARINC record adds.
 //
 // Read, 1-based columns: 7–8 ICAO region, 9 restrictive type, 10–19 designation, 20 multiple code,

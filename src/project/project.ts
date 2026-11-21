@@ -5,7 +5,17 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Plugin } from 'vite';
 
-export type ProjectId = 'kouro' | 'kokuzu' | 'kansei' | 'koho' | 'kyouyou';
+/**
+ * The apps that publish a project.json. `kokuzu`, `koho` and `kyouyou` are the old ids of Kōkūzu, Kōhō
+ * and Kyōyū: deprecated, removed in the next release (use `koukuuzu`, `kouhou` and `kyouyuu`). They are
+ * still accepted and written out as given.
+ */
+export type ProjectId =
+  | 'kouro' | 'koukuuzu' | 'kansei' | 'kouhou' | 'kyouyuu'
+  | DeprecatedProjectId;
+
+/** Deprecated, removed in the next release: the old ids of Kōkūzu, Kōhō and Kyōyū. */
+export type DeprecatedProjectId = 'kokuzu' | 'koho' | 'kyouyou';
 
 export interface ChangeSet {
   added: string[];
@@ -220,7 +230,7 @@ export function writeProjectJson(meta: ProjectMeta, root: string, outFile: strin
 export function projectJsonPlugin(meta: ProjectMeta, root: string = process.cwd()): Plugin {
   let source = '';
   return {
-    name: 'kyouyou-project-json',
+    name: 'kyouyuu-project-json',
     config() {
       return {define: {__PROJECT_VERSION__: JSON.stringify(readVersion(root))}};
     },

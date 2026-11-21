@@ -11,7 +11,7 @@
 // section P with N at column 6 (they share the navaid layout) and column 13 blank; `subsectionOf` knows.
 //
 // Sources: the public descriptions of the 424-18 record layouts (as the FAA's CIFP documentation and
-// widely published readers give them), and the columns kyouyou's own readers already use: the procedure
+// widely published readers give them), and the columns Kyōyū's own readers already use: the procedure
 // legs, runways and airport records in ../faa/cifp.ts and the restrictive airspace in ../faa/airspace.ts.
 // Positions were checked against real records without taking anything from them; every record in the
 // tests is invented.

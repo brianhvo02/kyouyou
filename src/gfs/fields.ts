@@ -1,7 +1,7 @@
 /**
  * Reads NOAA GFS 1-degree fields straight from NOAA's public bucket. This folder
- * (`src/wx/gfs`) is self-contained: it imports nothing from the rest of Kouro, so it can
- * be copied whole into another project (kokuzu's wind layer uses a copy; Kouro's is the
+ * (`src/wx/gfs`) is self-contained: it imports nothing from the rest of Kōro, so it can
+ * be copied whole into another project (Kōkūzu's wind layer uses a copy; Kōro's is the
  * source).
  */
 import { decodeGrib2 } from './grib2.ts';

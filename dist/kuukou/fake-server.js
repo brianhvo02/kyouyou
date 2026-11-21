@@ -1,7 +1,7 @@
 /**
- * A stand-in Kuukou server for apps' tests: answers `/kuukou/api/server`, folder manifests and folder
- * files (with HTTP Range) from in-memory made-up files, as the real server's contract says (kuukou repo,
- * docs/contracts.md, "Kuukou server"). Test-only. Like the real server it serves only allow-listed
+ * A stand-in Kakunōko (the home server) for apps' tests: answers `/kuukou/api/server`, folder manifests
+ * and folder files (with HTTP Range) from in-memory made-up files, as the real server's contract says
+ * (kuukou repo, docs/contracts.md, "Kakunōko"). Test-only. Like the real server it serves only allow-listed
  * names (case-insensitive) and honours Range only on .bin, .J3N and .J3G; it does not check where in
  * the Jeppesen folder a file sits (the real server also checks the chart and cycle directories), nor
  * gzip, caching headers, client addresses or pairing. The sim relay and write lock are not stood in yet.

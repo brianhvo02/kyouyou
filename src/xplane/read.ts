@@ -106,7 +106,7 @@ export function createSimReader<K extends string>(opts: SimReaderOptions<K>): Si
     try {
       cb(...args);
     } catch (e) {
-      console.error('kyouyou/xplane/read: a callback threw', e);
+      console.error('kyouyuu/xplane/read: a callback threw', e);
     }
   };
 

@@ -1,7 +1,7 @@
 // ARINC 424-18 codes in plain words: altitude and speed limits, path terminators, route types and turn
 // directions, as found in SID, STAR and approach legs and in airway records. The meanings follow the
 // public descriptions of the 424 format (as the FAA's CIFP documentation gives them) and the reading
-// already in ./procedures.ts; the wording is kyouyou's own.
+// already in ./procedures.ts; the wording is Kyōyū's own.
 import { parseFeet } from "./procedures.js";
 /** An altitude as written, for reading: `5000` is "5,000 ft", `FL120` stays "FL120", anything else as is. */
 function altitude(s) {

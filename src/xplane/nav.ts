@@ -1,4 +1,4 @@
-// Reader for X-Plane's earth_nav.dat (specs XP NAV1150 and XP NAV1200). Based on Kouro's reader, with
+// Reader for X-Plane's earth_nav.dat (specs XP NAV1150 and XP NAV1200). Based on Kōro's reader, with
 // its agreement, widened from NDB and VOR to every row type. Row: code, lat, lon, elevation (ft),
 // frequency, range, value, ident, terminal airport or ENRT, ICAO region, [runway], name.
 //

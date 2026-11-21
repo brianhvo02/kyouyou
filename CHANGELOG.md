@@ -1,10 +1,20 @@
 # Changelog
 
-All notable changes to kyouyou (共有) are recorded here, newest first. The format follows
+All notable changes to Kyōyū (共有) are recorded here, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/) (0.y.z until 1.0).
 
 ## [Unreleased]
+
+### Changed
+
+- The package is renamed `kyouyou` → `kyouyuu` (display name Kyōyū), and its repository `brianhvo02/kyouyou` → `brianhvo02/kyouyuu` (GitHub redirects the old address). Short names now write long vowels out as typed (`ou`, `uu`); display names carry macrons (Kyoten Kūkō, Kōro, Kōkūzu, Kansei, Kōhō, Kakunōko, Kyōyū), on the family bar's signs too (Kūkō, Kōro, Kakunōko).
+- `family-bar`: Kōkūzu's member id is `koukuuzu` (public address `https://koukuuzu.pages.dev/`, home path `../koukuuzu/`) and Kōhō's is `kouhou` (`https://kouhou.pages.dev/`, `../kouhou/`). `FAMILY` lists the new ids.
+- `style/tokens.css`: the accents `--kk-koukuuzu`, `--kk-on-koukuuzu`, `--kk-kouhou` and `--kk-on-kouhou`, and `data-kk-accent="koukuuzu"` and `"kouhou"`.
+- `project`: `ProjectId` adds `koukuuzu`, `kouhou` and `kyouyuu`; this package's own `project.json` now has the id `kyouyuu`.
+- `style/fonts.css`: the KK Mincho subset also carries 自動操縦, for Jidō Sōjū.
+- Deprecated, removed in the next release: the old ids `kokuzu` and `koho` in the family bar's `current` and `unavailable` (read as `koukuuzu` and `kouhou`); the tokens `--kk-kokuzu`, `--kk-on-kokuzu`, `--kk-koho`, `--kk-on-koho` and `data-kk-accent="kokuzu"` and `"koho"` (aliases of the new ones); and `kokuzu`, `koho` and `kyouyou` as `ProjectId`s.
+- To move an app: change the dependency to `"kyouyuu": "github:brianhvo02/kyouyuu#v0.20.0"` (and remove `kyouyou`), change imports `kyouyou/…` to `kyouyuu/…` (CSS `@import`s included), and switch the family-bar ids, tokens and `data-kk-accent` values above to the new names. The subpaths, exports and APIs are otherwise unchanged.
 
 ## [0.19.0] - 2026-11-20
 

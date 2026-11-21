@@ -1,4 +1,4 @@
-// Reader for X-Plane's earth_awy.dat (spec XP AWY1101; real files say 1100, same rows). Based on Kouro's
+// Reader for X-Plane's earth_awy.dat (spec XP AWY1101; real files say 1100, same rows). Based on Kōro's
 // reader and its airway stitching, with its agreement. Row: from ident, region, type; to ident, region,
 // type; direction (N both ways, F from→to only, B to→from only); layer (1 low, 2 high); base FL; top FL;
 // airway names joined by '-'. Never throws: malformed rows are skipped; an unsupported version gives none.
@@ -67,7 +67,7 @@ export function airwayRuns(segments) {
 /**
  * Joins segments into chains, ignoring direction for the joining; each segment is used once. Chains start
  * at points with one or more than two segments (ends and branches) and stop at the next such point; what
- * remains are closed loops. (Kouro's stitching.)
+ * remains are closed loops. (Kōro's stitching.)
  */
 function stitch(segments) {
     const edgesAt = new Map();

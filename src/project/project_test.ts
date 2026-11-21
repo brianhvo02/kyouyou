@@ -85,7 +85,7 @@ const README = `# App
 - not a feature
 `;
 
-const META: ProjectMeta = { id: 'kokuzu', name: 'Demo', summary: 'A demo.', url: 'https://example.com' };
+const META: ProjectMeta = { id: 'koukuuzu', name: 'Demo', summary: 'A demo.', url: 'https://example.com' };
 
 describe('parseChangelog', () => {
   it('reads unreleased and versions newest first', () => {
@@ -144,7 +144,7 @@ describe('buildProjectJson', () => {
     expect(p.version).toBe('0.1.0');
     expect(p.released).toBe('2026-10-01');
     expect(p.changelog).toHaveLength(2);
-    expect(p.id).toBe('kokuzu');
+    expect(p.id).toBe('koukuuzu');
     expect(p.features).toHaveLength(2);
   });
 
@@ -262,8 +262,17 @@ describe('project.json writer and plugin', () => {
 
 describe('ProjectId', () => {
   it('names every app that publishes a project.json, Kōhō included', () => {
-    expectTypeOf<ProjectId>().toEqualTypeOf<'kouro' | 'kokuzu' | 'kansei' | 'koho' | 'kyouyou'>();
-    const koho: ProjectMeta = { id: 'koho', name: 'Kōhō (航法)', summary: 'A demo.', url: 'https://koho.pages.dev/' };
-    expect(buildProjectJson(koho, '0.2.0', { changelog: CHANGELOG, roadmap: '', readme: '' }).id).toBe('koho');
+    expectTypeOf<ProjectId>().toEqualTypeOf<
+      'kouro' | 'koukuuzu' | 'kansei' | 'kouhou' | 'kyouyuu' | 'kokuzu' | 'koho' | 'kyouyou'
+    >();
+    const kouhou: ProjectMeta = { id: 'kouhou', name: 'Kōhō (航法)', summary: 'A demo.', url: 'https://kouhou.pages.dev/' };
+    expect(buildProjectJson(kouhou, '0.2.0', { changelog: CHANGELOG, roadmap: '', readme: '' }).id).toBe('kouhou');
+  });
+
+  it('still accepts the deprecated ids kokuzu, koho and kyouyou, unchanged', () => {
+    for (const id of ['kokuzu', 'koho', 'kyouyou'] as const) {
+      const meta: ProjectMeta = { id, name: 'Demo', summary: 'A demo.', url: 'https://example.com' };
+      expect(buildProjectJson(meta, '0.2.0', { changelog: CHANGELOG, roadmap: '', readme: '' }).id).toBe(id);
+    }
   });
 });

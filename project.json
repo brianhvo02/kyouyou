@@ -1,9 +1,9 @@
 {
   "schema": 1,
-  "id": "kyouyou",
-  "name": "kyouyou (共有)",
-  "summary": "Code shared by the Kuukou flight-simulation apps",
-  "url": "https://github.com/brianhvo02/kyouyou",
+  "id": "kyouyuu",
+  "name": "Kyōyū (共有)",
+  "summary": "Code shared by the Kyoten Kūkō flight-simulation apps",
+  "url": "https://github.com/brianhvo02/kyouyuu",
   "version": "0.19.0",
   "released": "2026-11-20",
   "changelog": [
@@ -183,7 +183,15 @@
   ],
   "unreleased": {
     "added": [],
-    "changed": [],
+    "changed": [
+      "The package is renamed `kyouyou` → `kyouyuu` (display name Kyōyū), and its repository `brianhvo02/kyouyou` → `brianhvo02/kyouyuu` (GitHub redirects the old address). Short names now write long vowels out as typed (`ou`, `uu`); display names carry macrons (Kyoten Kūkō, Kōro, Kōkūzu, Kansei, Kōhō, Kakunōko, Kyōyū), on the family bar's signs too (Kūkō, Kōro, Kakunōko).",
+      "`family-bar`: Kōkūzu's member id is `koukuuzu` (public address `https://koukuuzu.pages.dev/`, home path `../koukuuzu/`) and Kōhō's is `kouhou` (`https://kouhou.pages.dev/`, `../kouhou/`). `FAMILY` lists the new ids.",
+      "`style/tokens.css`: the accents `--kk-koukuuzu`, `--kk-on-koukuuzu`, `--kk-kouhou` and `--kk-on-kouhou`, and `data-kk-accent=\"koukuuzu\"` and `\"kouhou\"`.",
+      "`project`: `ProjectId` adds `koukuuzu`, `kouhou` and `kyouyuu`; this package's own `project.json` now has the id `kyouyuu`.",
+      "`style/fonts.css`: the KK Mincho subset also carries 自動操縦, for Jidō Sōjū.",
+      "Deprecated, removed in the next release: the old ids `kokuzu` and `koho` in the family bar's `current` and `unavailable` (read as `koukuuzu` and `kouhou`); the tokens `--kk-kokuzu`, `--kk-on-kokuzu`, `--kk-koho`, `--kk-on-koho` and `data-kk-accent=\"kokuzu\"` and `\"koho\"` (aliases of the new ones); and `kokuzu`, `koho` and `kyouyou` as `ProjectId`s.",
+      "To move an app: change the dependency to `\"kyouyuu\": \"github:brianhvo02/kyouyuu#v0.20.0\"` (and remove `kyouyou`), change imports `kyouyou/…` to `kyouyuu/…` (CSS `@import`s included), and switch the family-bar ids, tokens and `data-kk-accent` values above to the new names. The subpaths, exports and APIs are otherwise unchanged."
+    ],
     "fixed": [],
     "removed": []
   },
@@ -197,7 +205,7 @@
     ],
     "later": [
       "Reading navigation data from a user's own licensed database, kept on their device.",
-      "Shared weather caching for the Kuukou server."
+      "Shared weather caching for Kakunōko."
     ],
     "notPlanned": [
       "Shipping any navigation data with the package."
@@ -225,7 +233,7 @@
       "detail": "`gfs/*` decodes NOAA GFS winds, `atmosphere` converts altitude and speed, and `wx/upstream` relays airport weather and weather hazards."
     },
     {
-      "summary": "A Kuukou server stand-in.",
+      "summary": "A Kakunōko stand-in.",
       "detail": "`kuukou/fake-server` and `gfs/fake-gfs` let an app test against made-up servers."
     },
     {
@@ -234,7 +242,7 @@
     },
     {
       "summary": "The family style kit.",
-      "detail": "`style/tokens.css`, `style/fonts.css` and `style/base.css` give every Kyoten Kuukou surface the same airside-sign palette, B612 type and Mincho names, light and dark, with the fonts self-hosted."
+      "detail": "`style/tokens.css`, `style/fonts.css` and `style/base.css` give every Kyoten Kūkō surface the same airside-sign palette, B612 type and Mincho names, light and dark, with the fonts self-hosted."
     },
     {
       "summary": "The family bar.",

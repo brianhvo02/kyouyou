@@ -1,4 +1,4 @@
-// X-Plane's v1100 `.fms` flight plan: reading one, and writing one. Kouro writes them, Kōkūzu and
+// X-Plane's v1100 `.fms` flight plan: reading one, and writing one. Kōro writes them, Kōkūzu and
 // Kansei read them, so both ends live here and a round-trip test holds them together.
 
 export type FmsPointKind = 'airport' | 'ndb' | 'vor' | 'fix';
@@ -10,7 +10,7 @@ export interface FmsPoint {
   lon: number;
   /** How the point is reached: an airway name, DRCT, or ADEP / ADES for the two airports. */
   via: string;
-  /** The altitude on the point's line, feet. Kouro writes 0 for the airports and the initial cruise altitude en route. */
+  /** The altitude on the point's line, feet. Kōro writes 0 for the airports and the initial cruise altitude en route. */
   altitudeFt: number;
 }
 

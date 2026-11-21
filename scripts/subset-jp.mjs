@@ -10,8 +10,9 @@
 import {readFileSync, writeFileSync} from 'node:fs';
 import subsetFont from 'subset-font';
 
-// 拠点空港 Kuukou, 航路 Kouro, 航空図 Kōkūzu, 管制 Kansei, 航法 Kōhō, 格納庫 Kakunouko, 共有 kyouyou.
-const NAMES = '拠点空港航路図管制法格納庫共有';
+// 拠点空港 Kyoten Kūkō, 航路 Kōro, 航空図 Kōkūzu, 管制 Kansei, 航法 Kōhō, 格納庫 Kakunōko, 共有 Kyōyū,
+// 自動操縦 Jidō Sōjū.
+const NAMES = '拠点空港航路図管制法格納庫共有自動操縦';
 const KANJI = [...new Set(NAMES)].join('');
 const WEIGHT = 600;
 const OUT = new URL('../src/style/fonts/kk-mincho-subset.woff2', import.meta.url);

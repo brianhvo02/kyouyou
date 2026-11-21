@@ -1,5 +1,5 @@
-// From Kōkūzu's scripts/wx-upstream.ts, moved into kyouyou with its agreement (2026-11-19) so Kōkūzu's Pages
-// Function, its dev servers and the Kuukou server share one copy.
+// From Kōkūzu's scripts/wx-upstream.ts, moved into Kyōyū with its agreement (2026-11-19) so Kōkūzu's Pages
+// Function, its dev servers and Kakunōko share one copy.
 //
 // The airport-weather relay, shared by everything that serves the app: the Cloudflare Pages Function
 // (functions/wx.ts) on the deployed site, the Vite dev server and the LAN host. NOAA's Aviation Weather

@@ -1,5 +1,5 @@
 // Reader for the FAA's CIFP file FAACIFP18: ARINC 424-18, one 132-column record per line, every airport
-// in one file. It gives each airport the same `CifpAirport` that `kyouyou/xplane/cifp` reads from an
+// in one file. It gives each airport the same `CifpAirport` that `kyouyuu/xplane/cifp` reads from an
 // X-Plane per-airport file, by the same rules (shared in ../arinc424/procedures.ts).
 //
 // Read: airport section P (column 5, column 6 blank) with subsection (column 13) D SID, E STAR,
